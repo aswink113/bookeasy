@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookeasy | Corporate Admin Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --surface: #0f172a;
+            --surface-light: #1e293b;
+            --accent-emerald: #10b981;
+            --accent-gold: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-muted: #334155;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 260px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border-muted);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0;
+            position: fixed;
+            height: 100vh;
+            z-index: 50;
+        }
+
+        .logo-area {
+            padding: 0 1.5rem 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-emerald);
+            border-bottom: 1px solid var(--border-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0 0.75rem;
+            margin: 0;
+        }
+
+        nav li {
+            margin-bottom: 4px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--surface-light);
+            color: var(--text-primary);
+        }
+
+        nav a.active {
+            border-left: 3px solid var(--accent-emerald);
+            border-radius: 0 8px 8px 0;
+            background-color: rgba(16, 185, 129, 0.05);
+            color: var(--accent-emerald);
+        }
+
+        main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2.5rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--surface);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            border: 1px solid var(--border-muted);
+            font-size: 0.875rem;
+        }
+        
+        .data-panel {
+            background-color: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border-muted);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: rgba(255,255,255,0.02);
+            text-align: left;
+            padding: 12px 24px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-muted);
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-muted);
+        }
+        
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .st-pending { background: rgba(245, 158, 11, 0.1); color: var(--accent-gold); }
+        .st-accepted { background: rgba(16, 185, 129, 0.1); color: var(--accent-emerald); }
+        .st-completed { background: rgba(16, 185, 129, 0.1); color: var(--accent-emerald); }
+        .st-cancelled { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-light);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid var(--border-muted);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 4px;
+            bottom: 3px;
+            background-color: var(--text-secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-emerald);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--accent-emerald);
+        }
+
+        /* Search Bar & Pagination */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            background: var(--surface-light);
+            border: 1px solid var(--border-muted);
+            color: var(--text-primary);
+            padding: 8px 16px 8px 36px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            width: 240px;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-emerald);
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--text-secondary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-muted);
+        }
+
+        .page-link {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            border: 1px solid var(--border-muted);
+            background: var(--surface-light);
+        }
+
+        .page-link:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-emerald);
+        }
+
+        .page-active {
+            background: var(--accent-emerald);
+            color: #000;
+            border-color: var(--accent-emerald);
+            font-weight: 600;
+        }
+
+        .filter-select {
+            background: var(--surface-light);
+            border: 1px solid var(--border-muted);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 160px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-emerald);
+        }
+
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo-area">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Bookeasy Intel</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'dashboard' %}" class="{% if active_page == 'overview' %}active{% endif %}">Overview</a></li>
+                <li><a href="{% url 'merchants' %}" class="{% if active_page == 'merchants' %}active{% endif %}">Merchant Fleet</a></li>
+                <li><a href="{% url 'users' %}" class="{% if active_page == 'users' %}active{% endif %}">Customer Base</a></li>
+                <li><a href="{% url 'bookings' %}" class="{% if active_page == 'bookings' %}active{% endif %}">Booking Ledger</a></li>
+                <li><a href="{% url 'revenue' %}" class="{% if active_page == 'revenue' %}active{% endif %}">Revenue Streams</a></li>
+                <li><a href="/admin/">System Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <header>
+            <h1>{% block page_title %}Dashboard Intelligence{% endblock %}</h1>
+            <div class="user-pill">
+                <span style="color: var(--text-secondary);">Enterprise Admin</span>
+                <span style="font-weight:600;">{{ request.user.username|default:"Master" }}</span>
+                <div style="width: 8px; height: 8px; background: var(--accent-emerald); border-radius: 50%;"></div>
+            </div>
+        </header>
+        
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

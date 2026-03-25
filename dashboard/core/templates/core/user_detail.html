@@ -1,0 +1,123 @@
+{% extends "core/base.html" %}
+
+{% block page_title %}Client Profile: {{ user.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        background: linear-gradient(135deg, var(--surface) 0%, #1e1b4b 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
+        border: 1px solid var(--border-muted);
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+</style>
+
+<div class="profile-header">
+    <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <h2 style="margin:0; font-size: 1.8rem;">{{ user.name }}</h2>
+            <span class="status-pill st-accepted" style="text-transform: uppercase; font-size: 0.7rem; padding: 4px 12px;">{{ user.role }} Account</span>
+        </div>
+        <p style="color: var(--text-secondary); margin: 0 0 1.5rem 0;">{{ user.email }} • Registered {{ user.created_at|date:"M d, Y" }}</p>
+
+        <div style="margin-bottom: 2rem;">
+            <a href="{% url 'users' %}" style="color: var(--accent-emerald); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Return to Client Registry
+            </a>
+        </div>
+        
+        <div class="meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">Engagement Level</span>
+                <span class="meta-value">{{ recent_bookings.count }} Historical Activities</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Identity ID</span>
+                <span class="meta-value" style="font-family: monospace; font-size: 0.85rem; color: var(--text-secondary);">{{ user.id|stringformat:".16s" }}...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+        <label class="switch" style="transform: scale(1.2);">
+            <input type="checkbox" {% if user.is_active %}checked{% endif %} onchange="window.location.href='{% url 'toggle_status' user.id %}'">
+            <span class="slider"></span>
+        </label>
+        <span style="font-size: 0.8rem; color: var(--text-secondary);">
+            {% if user.is_active %}System Access Enabled{% else %}Account Locked{% endif %}
+        </span>
+    </div>
+</div>
+
+{% if merchant_profile %}
+<div class="data-panel" style="margin-bottom: 2.5rem; border-left: 4px solid var(--accent-emerald);">
+    <div class="panel-header">
+        <h3 style="font-size: 1.1rem; margin:0;">Enterprise Partnership Intelligence</h3>
+        <a href="{% url 'merchant_detail' merchant_profile.pk %}" style="font-size: 0.8rem; color: var(--accent-emerald); text-decoration:none;">Go to Business Dossier →</a>
+    </div>
+    <div style="padding: 1.25rem 1.5rem; color: var(--text-secondary);">
+        This user is the administrative head of <strong>{{ merchant_profile.shop_name }}</strong>. 
+        Category: {{ merchant_profile.service_type }}.
+    </div>
+</div>
+{% endif %}
+
+<div class="data-panel">
+    <div class="panel-header">
+        <h3 style="font-size: 1.1rem; margin:0;">Engagement Log</h3>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Timeline</th>
+                <th>Enterprise Partner</th>
+                <th>Service Code</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in recent_bookings %}
+            <tr>
+                <td style="color: var(--text-secondary); font-size: 0.8rem;">{{ booking.booking_date|date:"F d, Y H:i" }}</td>
+                <td style="font-weight: 500;">{{ booking.merchant.shop_name }}</td>
+                <td style="color: var(--text-secondary);">{{ booking.merchant.service_type }}</td>
+                <td><span class="status-pill st-{{ booking.status }}">{{ booking.status }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 3rem;">No historical engagement records found for this client identity.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

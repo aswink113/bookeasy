@@ -1,0 +1,89 @@
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List, Union
+from uuid import UUID
+from datetime import datetime
+from decimal import Decimal
+
+# User schemas
+class UserBase(BaseModel):
+    name: str
+    email: EmailStr
+    role: str # 'customer' or 'merchant'
+    fcm_token: Optional[str] = None
+
+class UserCreate(UserBase):
+    password: str
+    shop_name: Optional[str] = None
+    address: Optional[str] = None
+    service_type: Optional[str] = None
+    base_price: Optional[Decimal] = None
+
+class MerchantProfile(BaseModel):
+    shop_name: str
+    address: str
+    service_type: str
+    base_price: Decimal
+    rating: float
+    is_subscribed: bool
+    subscription_end: Optional[datetime]
+    lat: float
+    lng: float
+
+class UserResponse(UserBase):
+    id: UUID
+    merchant_profile: Optional[MerchantProfile] = None
+
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
+# Booking schemas
+class BookingBase(BaseModel):
+    merchant_id: UUID
+    booking_date: datetime
+
+class BookingCreate(BookingBase):
+    pass
+
+class BookingUpdate(BaseModel):
+    status: str # 'accepted', 'declined', 'completed'
+
+class BookingResponse(BaseModel):
+    id: UUID
+    customer_id: UUID
+    merchant_id: UUID
+    status: str
+    booking_date: datetime
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# Merchant response schemas
+class MerchantDiscoveryResponse(BaseModel):
+    id: UUID
+    shop_name: str
+    service_type: str
+    address: str
+    lat: float
+    lng: float
+    rating: float
+    base_price: Decimal
+    is_subscribed: bool
+    subscription_end: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+# Payment schemas
+class PaymentCreateOrder(BaseModel):
+    amount: int # In paise
+
+class PaymentVerify(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str

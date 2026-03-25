@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+psycopg2-binary
+geoalchemy2
+pydantic[email]
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+httpx
+razorpay
+firebase-admin
+python-dotenv
+asyncpg

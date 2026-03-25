@@ -1,0 +1,153 @@
+{% extends "core/base.html" %}
+
+{% block page_title %}Partner Intelligence: {{ merchant.shop_name }}{% endblock %}
+
+{% block content %}
+<style>
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        background: linear-gradient(135deg, var(--surface) 0%, #1e293b 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
+        border: 1px solid var(--border-muted);
+    }
+
+    .profile-meta {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .action-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .stat-ring {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="profile-header">
+    <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <h2 style="margin:0; font-size: 1.8rem; letter-spacing: -0.02em;">{{ merchant.shop_name }}</h2>
+            {% if merchant.is_subscribed %}
+            <span class="status-pill st-accepted">Premium Enterprise</span>
+            {% else %}
+            <span class="status-pill st-pending">Economy Tier</span>
+            {% endif %}
+        </div>
+        <p style="color: var(--text-secondary); margin: 0 0 1.5rem 0;">{{ merchant.service_type }} • {{ merchant.address }}</p>
+        
+        <div style="margin-bottom: 2rem;">
+            <a href="{% url 'merchants' %}" style="color: var(--accent-emerald); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Return to Merchant Registry
+            </a>
+        </div>
+
+        <div class="profile-meta">
+            <div class="meta-item">
+                <span class="meta-label">Total Volume</span>
+                <span class="meta-value">{{ merchant.bookings.count }} Ledger Entries</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Audit Rating</span>
+                <span class="meta-value" style="color: var(--accent-gold);">★ {{ merchant.rating }} / 5.0</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Network Onboarding</span>
+                <span class="meta-value">{{ merchant.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-group">
+        <label class="switch" style="transform: scale(1.2);">
+            <input type="checkbox" {% if merchant.user.is_active %}checked{% endif %} onchange="window.location.href='{% url 'toggle_status' merchant.user.id %}'">
+            <span class="slider"></span>
+        </label>
+        <span style="font-size: 0.8rem; color: var(--text-secondary); align-self: center;">
+            {% if merchant.user.is_active %}Active Access{% else %}Suspended{% endif %}
+        </span>
+    </div>
+</div>
+
+<div class="section-grid">
+    <div class="data-panel">
+        <div class="panel-header">
+            <h3 style="font-size: 1.1rem; margin:0;">Transaction History (Recent)</h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ledger ID</th>
+                    <th>Client</th>
+                    <th>Timeline</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in recent_bookings %}
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.75rem;">#{{ booking.id|stringformat:".8s"|upper }}</td>
+                    <td>{{ booking.customer.name }}</td>
+                    <td style="color: var(--text-secondary); font-size: 0.8rem;">{{ booking.booking_date|date:"d M H:i" }}</td>
+                    <td><span class="status-pill st-{{ booking.status }}">{{ booking.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No transaction data available for this merchant.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="data-panel">
+        <div class="panel-header">
+            <h3 style="font-size: 1.1rem; margin:0;">Core Account Intelligence</h3>
+        </div>
+        <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div>
+                <span class="meta-label">Enterprise Owner</span>
+                <div style="font-weight: 600; font-size: 1rem; color: var(--text-primary);">{{ merchant.user.name }}</div>
+                <div style="color: var(--text-secondary); font-size: 0.85rem;">{{ merchant.user.email }}</div>
+            </div>
+            <div>
+                <span class="meta-label">Internal Node ID</span>
+                <div style="font-family: monospace; font-size: 0.85rem; color: var(--text-secondary);">{{ merchant.user.id }}</div>
+            </div>
+            <div>
+                <span class="meta-label">Last Synchronization</span>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">{{ merchant.updated_at|date:"M d, Y H:i" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+
+{% block page_title %}Customer Base Registry{% endblock %}
+
+{% block content %}
+<div class="data-panel">
+    <div class="panel-header">
+        <h2 style="font-size: 1.1rem; margin:0;">Active User Base</h2>
+        <div style="display: flex; align-items: center; gap: 2rem;">
+            <form method="GET" class="search-container">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" name="search" class="search-input" placeholder="Search accounts..." value="{{ search_query }}">
+            </form>
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Identity Directory</span>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Email Contact</th>
+                <th>System Role</th>
+                <th>Account Access</th>
+                <th>Privileges</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td style="font-weight: 500;">{{ user.name }}</td>
+                <td style="color: var(--text-secondary);">{{ user.email }}</td>
+                <td style="color: var(--text-secondary); text-transform: uppercase; font-size: 0.7rem; font-weight:700;">{{ user.role }}</td>
+                <td>
+                    {% if user.is_active %}
+                    <span class="status-pill st-accepted">Active</span>
+                    {% else %}
+                    <span class="status-pill st-cancelled">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <a href="{% url 'user_detail' user.id %}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; border: 1px solid var(--border-muted); padding: 4px 10px; border-radius: 6px;" onmouseover="this.style.borderColor=var(--accent-emerald)" onmouseout="this.style.borderColor='var(--border-muted)'">Profile dossier</a>
+                        <label class="switch">
+                            <input type="checkbox" {% if user.is_active %}checked{% endif %} onchange="window.location.href='{% url 'toggle_status' user.id %}'">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No user accounts found matching your query.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if users.has_other_pages %}
+    <div class="pagination">
+        {% if users.has_previous %}
+            <a href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link">Previous</a>
+        {% endif %}
+        
+        {% for num in users.paginator.page_range %}
+            {% if users.number == num %}
+                <span class="page-link page-active">{{ num }}</span>
+            {% elif num > users.number|add:'-3' and num < users.number|add:'3' %}
+                <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="page-link">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
