@@ -18,7 +18,7 @@ import {
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 
-export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings, onLogout }) {
+export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings, onOpenEditProfile, onLogout }) {
   const user = apiService.getUser();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -186,7 +186,41 @@ export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings,
           </div>
 
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-            Account & Preferences
+            Account & Settings
+          </div>
+
+          <div
+            onClick={() => {
+              onClose();
+              onOpenEditProfile();
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 14px',
+              borderRadius: theme.radii.lg,
+              cursor: 'pointer',
+              backgroundColor: '#EFF6FF',
+              border: `1.5px solid ${theme.colors.accentBlue}`,
+              marginBottom: '10px',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#DBEAFE')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#EFF6FF')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: theme.colors.primaryNavy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <User size={18} color="#FFFFFF" />
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: theme.colors.primaryNavy }}>My Profile & Settings</div>
+                <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>Edit name, change email with OTP</div>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: theme.colors.primaryNavy, backgroundColor: '#FFFFFF', padding: '4px 10px', borderRadius: '12px' }}>
+              Edit
+            </span>
           </div>
 
           {[

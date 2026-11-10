@@ -4,14 +4,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database import get_db
 from app.models.models import User, Merchant
-from app.schemas.schemas import UserCreate, UserResponse, Token, SendOTPRequest, VerifyOTPRequest
+from app.schemas.schemas import UserCreate, UserResponse, Token, SendOTPRequest, VerifyOTPRequest, SendEmailChangeOTPRequest, UpdateProfileRequest
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.utils.geo import geocode_address
 from app.utils.email_otp import send_verification_otp, verify_otp
 from datetime import timedelta
 from app.core.config import settings
+from jose import jwt, JWTError
+from fastapi.security import OAuth2PasswordBearer
 
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    query = select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
 
 @router.post("/send-otp")
 async def send_otp(req: SendOTPRequest, db: AsyncSession = Depends(get_db)):
@@ -105,3 +124,72 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+@router.post("/send-email-change-otp")
+async def send_email_change_otp(
+    req: SendEmailChangeOTPRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Send verification OTP to a new proposed email address for profile update"""
+    new_email = req.new_email.strip().lower()
+
+    if new_email == current_user.email.lower():
+        raise HTTPException(status_code=400, detail="New email must be different from your current email")
+
+    # Check if another user already has this email
+    query = select(User).where(User.email == new_email)
+    result = await db.execute(query)
+    if result.scalars().first():
+        raise HTTPException(status_code=400, detail="An account with this email address already exists")
+
+    otp = await send_verification_otp(new_email)
+    return {
+        "success": True,
+        "message": f"Verification code sent to {new_email}",
+        "dev_hint": otp if not settings.SMTP_PASSWORD else None
+    }
+
+@router.put("/profile", response_model=UserResponse)
+async def update_profile(
+    req: UpdateProfileRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update profile: username/name, or email (strictly requiring correct OTP for new email)"""
+    # 1. Update Name if provided
+    if req.name and req.name.strip():
+        current_user.name = req.name.strip()
+
+    # 2. Update Email if provided
+    if req.new_email:
+        new_email = req.new_email.strip().lower()
+        if new_email != current_user.email.lower():
+            if not req.email_otp:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Verification OTP is required to change your email address"
+                )
+
+            # Strictly verify the OTP for the new email
+            is_valid = verify_otp(new_email, req.email_otp)
+            if not is_valid:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid or expired OTP for the new email. Email update rejected."
+                )
+
+            # Check again if another account grabbed the email
+            check_q = select(User).where(User.email == new_email, User.id != current_user.id)
+            conflict = (await db.execute(check_q)).scalars().first()
+            if conflict:
+                raise HTTPException(
+                    status_code=400,
+                    detail="An account with this email address is already in use"
+                )
+
+            current_user.email = new_email
+
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user

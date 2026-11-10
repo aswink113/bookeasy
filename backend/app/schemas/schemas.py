@@ -22,9 +22,17 @@ class UserCreate(UserBase):
 class SendOTPRequest(BaseModel):
     email: EmailStr
 
+class SendEmailChangeOTPRequest(BaseModel):
+    new_email: EmailStr
+
 class VerifyOTPRequest(BaseModel):
     email: EmailStr
     otp: str
+
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = None
+    new_email: Optional[EmailStr] = None
+    email_otp: Optional[str] = None
 
 class MerchantProfile(BaseModel):
     shop_name: str

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle } from 'lucide-react';
+import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle, User } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
+import EditProfileModal from '../widgets/EditProfileModal';
 
 export default function MerchantDashboard({ onNavigate }) {
   const [requests, setRequests] = useState([]);
@@ -9,6 +10,8 @@ export default function MerchantDashboard({ onNavigate }) {
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const user = apiService.getUser();
 
   const loadMerchantBookings = async () => {
     setLoading(true);
@@ -115,6 +118,26 @@ export default function MerchantDashboard({ onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => setShowEditProfile(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                borderRadius: theme.radii.md,
+                border: `1px solid ${theme.colors.borderLight}`,
+                backgroundColor: '#FFFFFF',
+                color: theme.colors.primaryNavy,
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              <User size={16} color={theme.colors.sunsetOrange} />
+              <span>My Profile ({user?.name || 'Partner'})</span>
+            </button>
+
             <button
               onClick={() => {
                 apiService.logout();
@@ -415,6 +438,16 @@ export default function MerchantDashboard({ onNavigate }) {
           )}
         </div>
       </main>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        onProfileUpdated={(updated) => {
+          setSuccessMsg(`Profile updated! Welcome, ${updated.name}`);
+          setTimeout(() => setSuccessMsg(''), 4000);
+        }}
+      />
     </div>
   );
 }

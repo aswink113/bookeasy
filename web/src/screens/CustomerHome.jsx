@@ -21,6 +21,7 @@ import LocationModal from '../widgets/LocationModal';
 import BookingModal from '../widgets/BookingModal';
 import CustomerBookingsModal from '../widgets/CustomerBookingsModal';
 import CustomerProfileDrawer from '../widgets/CustomerProfileDrawer';
+import EditProfileModal from '../widgets/EditProfileModal';
 
 // Helper: Haversine distance in KM
 function getDistanceKm(lat1, lon1, lat2, lon2) {
@@ -58,6 +59,7 @@ export default function CustomerHome({ onNavigate }) {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showBookingsModal, setShowBookingsModal] = useState(false);
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [selectedMerchantForBooking, setSelectedMerchantForBooking] = useState(null);
 
   // Dynamic user location state
@@ -782,9 +784,20 @@ export default function CustomerHome({ onNavigate }) {
         isOpen={showProfileDrawer}
         onClose={() => setShowProfileDrawer(false)}
         onOpenBookings={() => setShowBookingsModal(true)}
+        onOpenEditProfile={() => setShowEditProfileModal(true)}
         onLogout={() => {
           apiService.logout();
           onNavigate('login');
+        }}
+      />
+
+      {/* Edit Profile Modal (Name & Email Change with OTP) */}
+      <EditProfileModal
+        isOpen={showEditProfileModal}
+        onClose={() => setShowEditProfileModal(false)}
+        onProfileUpdated={(updatedUser) => {
+          setBookingSuccess(`Profile updated! Welcome, ${updatedUser.name}`);
+          setTimeout(() => setBookingSuccess(''), 4000);
         }}
       />
     </div>

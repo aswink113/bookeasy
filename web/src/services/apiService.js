@@ -2,6 +2,57 @@ const BASE_URL = 'http://127.0.0.1:8000/api/v1';
 
 export const apiService = {
   /**
+   * Send Email Change OTP to new email address
+   */
+  async sendEmailChangeOTP(newEmail) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/auth/send-email-change-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ new_email: newEmail.trim().toLowerCase() }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to send OTP to new email');
+    }
+    return data;
+  },
+
+  /**
+   * Update Profile (Name, and/or Email with OTP)
+   */
+  async updateProfile({ name, newEmail, emailOtp }) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        ...(name ? { name: name.trim() } : {}),
+        ...(newEmail ? { new_email: newEmail.trim().toLowerCase() } : {}),
+        ...(emailOtp ? { email_otp: emailOtp.trim() } : {}),
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to update profile');
+    }
+
+    // Update locally stored user data
+    const existing = this.getUser();
+    const updated = { ...existing, ...data };
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    return updated;
+  },
+
+  /**
    * Send Email OTP
    */
   async sendOTP(email) {
