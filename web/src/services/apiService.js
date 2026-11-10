@@ -151,17 +151,26 @@ export const apiService = {
    */
   async createBooking(merchantId, bookingDate) {
     const token = this.getToken();
+    if (!token) {
+      throw new Error('Please log in or sign up first to book an appointment.');
+    }
+
     const res = await fetch(`${BASE_URL}/bookings/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         merchant_id: merchantId,
         booking_date: bookingDate || new Date().toISOString(),
       }),
     });
+
+    if (res.status === 401) {
+      this.logout();
+      throw new Error('Your session has expired. Please log in again.');
+    }
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

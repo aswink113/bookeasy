@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   MapPin,
-  Bell,
   Search,
-  SlidersHorizontal,
   Star,
   Store,
   LogOut,
@@ -12,12 +10,10 @@ import {
   Navigation,
   Compass,
   Calendar,
-  User,
-  Heart,
-  Clock,
   Sparkles,
+  ArrowRight,
   ShieldCheck,
-  Filter
+  Check
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
@@ -43,19 +39,19 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 const CATEGORIES = [
-  'All',
-  'Salon',
-  'Spa & Massage',
-  'Dental Clinic',
-  'Car Detailing',
-  'Fitness & Yoga',
+  { label: 'All Services', icon: '✨' },
+  { label: 'Salon', icon: '✂️' },
+  { label: 'Spa & Massage', icon: '💆' },
+  { label: 'Dental Clinic', icon: '🦷' },
+  { label: 'Car Detailing', icon: '🚗' },
+  { label: 'Fitness & Yoga', icon: '🧘' },
 ];
 
 export default function CustomerHome({ onNavigate }) {
   const [merchants, setMerchants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All Services');
   const [bookingSuccess, setBookingSuccess] = useState('');
   
   // Modals state
@@ -100,10 +96,15 @@ export default function CustomerHome({ onNavigate }) {
     try {
       await apiService.createBooking(merchant.id, bookingDate);
       setSelectedMerchantForBooking(null);
-      setBookingSuccess(`Booking confirmed with ${merchant.shop_name}! View details in "My Bookings".`);
-      setTimeout(() => setBookingSuccess(''), 5000);
+      setBookingSuccess(`Booking confirmed with ${merchant.shop_name}! View receipt in "My Bookings" & check your email.`);
+      setTimeout(() => setBookingSuccess(''), 6000);
     } catch (err) {
-      alert(`Booking request: ${err.message}`);
+      if (err.message && (err.message.includes('expired') || err.message.includes('log in') || err.message.includes('token'))) {
+        alert(`${err.message} Redirecting to login...`);
+        onNavigate('login');
+      } else {
+        alert(`Booking request: ${err.message}`);
+      }
     }
   };
 
@@ -121,7 +122,7 @@ export default function CustomerHome({ onNavigate }) {
         m.address?.toLowerCase().includes(q);
 
       const matchesCat =
-        selectedCategory === 'All' ||
+        selectedCategory === 'All Services' ||
         m.service_type?.toLowerCase() === selectedCategory.toLowerCase();
 
       return matchesSearch && matchesCat;
@@ -129,8 +130,8 @@ export default function CustomerHome({ onNavigate }) {
     .sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
-      {/* Top Header */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', color: theme.colors.textPrimary }}>
+      {/* Top Premium Header */}
       <header
         style={{
           backgroundColor: '#FFFFFF',
@@ -139,12 +140,12 @@ export default function CustomerHome({ onNavigate }) {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.04)',
         }}
       >
         <div
           style={{
-            maxWidth: '1240px',
+            maxWidth: '1260px',
             margin: '0 auto',
             display: 'flex',
             alignItems: 'center',
@@ -159,27 +160,40 @@ export default function CustomerHome({ onNavigate }) {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
                 cursor: 'pointer',
               }}
-              onClick={() => setSelectedCategory('All')}
+              onClick={() => setSelectedCategory('All Services')}
             >
               <img
                 src="/logo.png"
                 alt="Bokivo Logo"
                 style={{
-                  width: '42px',
-                  height: '42px',
+                  width: '44px',
+                  height: '44px',
                   objectFit: 'contain',
-                  borderRadius: '10px',
                 }}
               />
-              <span style={{ fontSize: '1.35rem', fontWeight: 900, color: theme.colors.primaryNavy, letterSpacing: '-0.5px' }}>
-                Bokivo
-              </span>
+              <div>
+                <span
+                  style={{
+                    fontSize: '1.45rem',
+                    fontWeight: 900,
+                    letterSpacing: '-0.5px',
+                    color: theme.colors.brandNavy,
+                    display: 'block',
+                    lineHeight: 1,
+                  }}
+                >
+                  Bokivo
+                </span>
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: theme.colors.sunsetOrange, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                  Smart Bookings
+                </span>
+              </div>
             </div>
 
-            {/* Dynamic Location Picker */}
+            {/* Dynamic Location Picker with Orange Accent Glow */}
             <div
               onClick={() => setShowLocationModal(true)}
               style={{
@@ -187,45 +201,52 @@ export default function CustomerHome({ onNavigate }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '6px 12px',
-                borderRadius: theme.radii.lg,
+                padding: '7px 14px',
+                borderRadius: theme.radii.full,
                 border: `1px solid ${theme.colors.borderLight}`,
-                backgroundColor: '#F8FAFC',
+                backgroundColor: '#FFFFFF',
+                boxShadow: '0 2px 6px rgba(15, 30, 54, 0.04)',
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.colors.accentBlue)}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme.colors.borderLight)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = theme.colors.sunsetOrange;
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 122, 0, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = theme.colors.borderLight;
+                e.currentTarget.style.boxShadow = '0 2px 6px rgba(15, 30, 54, 0.04)';
+              }}
             >
               <div
                 style={{
-                  width: '30px',
-                  height: '30px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
-                  backgroundColor: location.isDetected ? '#DCFCE7' : 'rgba(56, 182, 255, 0.15)',
+                  backgroundColor: location.isDetected ? '#DCFCE7' : theme.colors.sunsetOrangeLight,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <MapPin size={16} color={location.isDetected ? '#16A34A' : theme.colors.accentBlue} />
+                <MapPin size={15} color={location.isDetected ? '#16A34A' : theme.colors.sunsetOrange} />
               </div>
 
               <div>
-                <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: theme.colors.textMuted, fontWeight: 700, letterSpacing: '0.5px' }}>
-                  {location.isDetected ? 'GPS Auto-Detected' : 'Selected Location'}
+                <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: theme.colors.textMuted, fontWeight: 800, letterSpacing: '0.5px' }}>
+                  {location.isDetected ? 'GPS Detected' : 'Location'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '0.9rem', fontWeight: 800, color: theme.colors.primaryNavy, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy, maxWidth: '190px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {location.name}
                   </span>
-                  <ChevronDown size={14} color={theme.colors.textSecondary} />
+                  <ChevronDown size={14} color={theme.colors.sunsetOrange} />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Customer Action Options */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* My Bookings Button */}
             <button
               onClick={() => setShowBookingsModal(true)}
@@ -233,26 +254,26 @@ export default function CustomerHome({ onNavigate }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 16px',
-                borderRadius: theme.radii.lg,
-                border: `1px solid ${theme.colors.borderLight}`,
-                backgroundColor: '#FFFFFF',
-                color: theme.colors.primaryNavy,
-                fontWeight: 700,
-                fontSize: '0.88rem',
+                padding: '9px 18px',
+                borderRadius: theme.radii.full,
+                border: `1.5px solid ${theme.colors.tealAccent}`,
+                backgroundColor: theme.colors.tealLight,
+                color: theme.colors.tealAccent,
+                fontWeight: 800,
+                fontSize: '0.86rem',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#F1F5F9';
-                e.currentTarget.style.borderColor = theme.colors.accentBlue;
+                e.currentTarget.style.backgroundColor = theme.colors.tealAccent;
+                e.currentTarget.style.color = '#FFFFFF';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.borderColor = theme.colors.borderLight;
+                e.currentTarget.style.backgroundColor = theme.colors.tealLight;
+                e.currentTarget.style.color = theme.colors.tealAccent;
               }}
             >
-              <Calendar size={17} color={theme.colors.accentBlue} />
+              <Calendar size={16} />
               <span>My Bookings</span>
             </button>
 
@@ -263,32 +284,34 @@ export default function CustomerHome({ onNavigate }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '6px 14px',
-                borderRadius: theme.radii.lg,
+                padding: '6px 14px 6px 8px',
+                borderRadius: theme.radii.full,
                 border: `1px solid ${theme.colors.borderLight}`,
                 backgroundColor: '#FFFFFF',
                 cursor: 'pointer',
+                transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.colors.accentBlue)}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = theme.colors.sunsetOrange)}
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme.colors.borderLight)}
             >
               <div
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: '50%',
-                  backgroundColor: theme.colors.accentBlue,
-                  color: theme.colors.primaryNavy,
+                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF9E42 100%)',
+                  color: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
+                  fontWeight: 900,
+                  fontSize: '0.88rem',
+                  boxShadow: '0 2px 6px rgba(255, 122, 0, 0.3)',
                 }}
               >
                 {(user.name || 'C').charAt(0).toUpperCase()}
               </div>
-              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: theme.colors.primaryNavy }}>
+              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
                 {user.name || 'Customer'}
               </span>
             </button>
@@ -305,16 +328,16 @@ export default function CustomerHome({ onNavigate }) {
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 12px',
-                borderRadius: theme.radii.lg,
+                borderRadius: theme.radii.full,
                 border: `1px solid ${theme.colors.borderLight}`,
                 backgroundColor: '#FFFFFF',
                 color: theme.colors.errorRed,
-                fontWeight: 600,
-                fontSize: '0.85rem',
+                fontWeight: 700,
+                fontSize: '0.82rem',
                 cursor: 'pointer',
               }}
             >
-              <LogOut size={16} />
+              <LogOut size={15} />
               <span>Logout</span>
             </button>
           </div>
@@ -322,25 +345,26 @@ export default function CustomerHome({ onNavigate }) {
       </header>
 
       {/* Main Content Area */}
-      <main style={{ maxWidth: '1240px', margin: '0 auto', padding: '24px 16px' }}>
+      <main style={{ maxWidth: '1260px', margin: '0 auto', padding: '28px 16px' }}>
         {/* Booking Notification Toast */}
         {bookingSuccess && (
           <div
             style={{
               backgroundColor: '#ECFDF5',
-              border: `1px solid ${theme.colors.successGreen}`,
+              border: `1.5px solid ${theme.colors.successGreen}`,
               color: '#065F46',
-              padding: '14px 20px',
-              borderRadius: theme.radii.lg,
+              padding: '14px 22px',
+              borderRadius: theme.radii.xl,
               marginBottom: '24px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontWeight: 600,
+              fontWeight: 700,
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <CheckCircle2 size={20} color={theme.colors.successGreen} />
+              <CheckCircle2 size={22} color={theme.colors.successGreen} />
               <span>{bookingSuccess}</span>
             </div>
             <button
@@ -349,10 +373,10 @@ export default function CustomerHome({ onNavigate }) {
                 background: 'none',
                 border: 'none',
                 color: '#059669',
-                fontWeight: 800,
+                fontWeight: 900,
                 textDecoration: 'underline',
                 cursor: 'pointer',
-                fontSize: '0.88rem',
+                fontSize: '0.9rem',
               }}
             >
               View in My Bookings →
@@ -360,34 +384,38 @@ export default function CustomerHome({ onNavigate }) {
           </div>
         )}
 
-        {/* Global Search & Location Banner */}
+        {/* Global Search Bar */}
         <div
           style={{
             position: 'relative',
-            marginBottom: '20px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-            borderRadius: theme.radii.lg,
+            marginBottom: '22px',
+            boxShadow: '0 8px 24px -4px rgba(15, 30, 54, 0.08)',
+            borderRadius: theme.radii.full,
             backgroundColor: '#FFFFFF',
+            border: `1px solid ${theme.colors.borderLight}`,
+            transition: 'border-color 0.2s',
           }}
         >
           <Search
-            size={20}
-            color={theme.colors.textMuted}
-            style={{ position: 'absolute', left: '16px', top: '16px' }}
+            size={22}
+            color={theme.colors.tealAccent}
+            style={{ position: 'absolute', left: '20px', top: '16px' }}
           />
           <input
             type="text"
-            placeholder="Search services, salons, spas, dentists, car care..."
+            placeholder="Search salons, dental clinics, luxury spas, car care..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '16px 140px 16px 48px',
-              borderRadius: theme.radii.lg,
-              border: `1px solid ${theme.colors.borderLight}`,
+              padding: '17px 150px 17px 54px',
+              borderRadius: theme.radii.full,
+              border: 'none',
               fontSize: '1rem',
               outline: 'none',
-              boxSizing: 'border-box',
+              backgroundColor: 'transparent',
+              color: theme.colors.primaryNavy,
+              fontWeight: 600,
             }}
           />
           <button
@@ -395,21 +423,25 @@ export default function CustomerHome({ onNavigate }) {
             style={{
               position: 'absolute',
               right: '8px',
-              top: '8px',
-              backgroundColor: theme.colors.primaryNavy,
+              top: '7px',
+              background: 'linear-gradient(135deg, #1E3A5F 0%, #0F1E36 100%)',
               color: '#FFFFFF',
               border: 'none',
-              borderRadius: theme.radii.md,
-              padding: '10px 16px',
+              borderRadius: theme.radii.full,
+              padding: '11px 20px',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               fontSize: '0.85rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(15, 30, 54, 0.2)',
+              transition: 'transform 0.15s',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
-            <Compass size={16} /> Change City
+            <Compass size={16} color={theme.colors.sunsetOrange} /> Change City
           </button>
         </div>
 
@@ -421,175 +453,238 @@ export default function CustomerHome({ onNavigate }) {
             gap: '10px',
             overflowX: 'auto',
             paddingBottom: '8px',
-            marginBottom: '24px',
+            marginBottom: '28px',
           }}
         >
           {CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat;
+            const isSelected = selectedCategory === cat.label;
             return (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={cat.label}
+                onClick={() => setSelectedCategory(cat.label)}
                 style={{
-                  padding: '8px 18px',
+                  padding: '9px 20px',
                   borderRadius: theme.radii.full,
-                  border: isSelected ? 'none' : `1px solid ${theme.colors.borderLight}`,
-                  backgroundColor: isSelected ? theme.colors.primaryNavy : '#FFFFFF',
-                  color: isSelected ? '#FFFFFF' : theme.colors.textPrimary,
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
+                  border: isSelected ? 'none' : `1.5px solid ${theme.colors.borderLight}`,
+                  background: isSelected
+                    ? 'linear-gradient(135deg, #FF7A00 0%, #FF9E42 100%)'
+                    : '#FFFFFF',
+                  color: isSelected ? '#FFFFFF' : theme.colors.textSecondary,
+                  fontWeight: 800,
+                  fontSize: '0.86rem',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  boxShadow: isSelected ? theme.shadows.primaryNavy : 'none',
+                  boxShadow: isSelected ? theme.shadows.orangeGlow : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   transition: 'all 0.15s',
                 }}
               >
-                {cat}
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Discovery Hero Card */}
+        {/* Discovery Hero Banner with Brand Color Geometry */}
         <div
           style={{
-            minHeight: '180px',
             borderRadius: theme.radii.xl,
-            marginBottom: '32px',
+            marginBottom: '36px',
             position: 'relative',
             overflow: 'hidden',
-            border: `1px solid ${theme.colors.borderLight}`,
-            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(135deg, #0F1E36 0%, #1E3A5F 55%, #134E5E 100%)',
             color: '#FFFFFF',
-            padding: '24px',
-            textAlign: 'center',
+            padding: '36px 28px',
+            boxShadow: '0 15px 35px -5px rgba(15, 30, 54, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '24px',
           }}
         >
+          {/* Subtle Orange Glow Sphere in Hero */}
           <div
             style={{
-              width: '48px',
-              height: '48px',
+              position: 'absolute',
+              right: '-60px',
+              top: '-60px',
+              width: '240px',
+              height: '240px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(56, 182, 255, 0.2)',
-              border: '2px solid #38B6FF',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '10px',
+              background: 'radial-gradient(circle, rgba(255, 122, 0, 0.25) 0%, rgba(255, 122, 0, 0) 70%)',
+              pointerEvents: 'none',
             }}
-          >
-            <MapPin size={24} color={theme.colors.accentBlue} />
+          />
+
+          <div style={{ position: 'relative', zIndex: 2, maxWidth: '640px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: 'rgba(255, 122, 0, 0.2)',
+                border: '1px solid rgba(255, 122, 0, 0.4)',
+                color: '#FFB066',
+                padding: '4px 12px',
+                borderRadius: theme.radii.full,
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '12px',
+              }}
+            >
+              <Sparkles size={12} /> Instant Appointments Confirmed
+            </div>
+
+            <h3 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, letterSpacing: '-0.5px', color: '#FFFFFF' }}>
+              Service Discovery in {location.shortName || location.name}
+            </h3>
+            <p style={{ margin: '8px 0 0', color: '#CBD5E1', fontSize: '0.92rem', lineHeight: 1.5 }}>
+              Coordinates: {location.lat.toFixed(4)}°N, {location.lng.toFixed(4)}°E • Pinpointing certified salons, wellness spas & clinics closest to you.
+            </p>
           </div>
 
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>
-            Verified Services in {location.shortName || location.name}
-          </h3>
-          <p style={{ margin: '6px 0 14px 0', color: theme.colors.textMuted, fontSize: '0.85rem', maxWidth: '520px' }}>
-            Coordinates: {location.lat.toFixed(4)}°N, {location.lng.toFixed(4)}°E • Real-time distance and instant appointments
-          </p>
-
-          <button
-            onClick={() => setShowLocationModal(true)}
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.12)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              color: '#FFFFFF',
-              borderRadius: theme.radii.full,
-              padding: '7px 18px',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <Navigation size={13} /> Change City or Auto-Detect GPS
-          </button>
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            <button
+              onClick={() => setShowLocationModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
+                border: 'none',
+                color: '#FFFFFF',
+                borderRadius: theme.radii.full,
+                padding: '12px 24px',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: theme.shadows.orangeGlow,
+                transition: 'transform 0.15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <Navigation size={15} />
+              <span>Change City / Auto-Detect</span>
+            </button>
+          </div>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Section Header */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
             <div>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: theme.colors.primaryNavy, margin: 0 }}>
-                {selectedCategory === 'All' ? 'Nearby Verified Services' : `${selectedCategory}s`}
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: theme.colors.primaryNavy, margin: 0 }}>
+                {selectedCategory === 'All Services' ? 'Nearby Verified Partners' : `${selectedCategory}s`}
               </h2>
-              <span style={{ fontSize: '0.85rem', color: theme.colors.textSecondary }}>
-                Sorted by closest distance to {location.shortName || location.name}
+              <span style={{ fontSize: '0.86rem', color: theme.colors.textSecondary }}>
+                Sorted by closest proximity to {location.shortName || location.name}
               </span>
             </div>
-            <span style={{ fontSize: '0.88rem', color: theme.colors.textSecondary, fontWeight: 700 }}>
-              {filtered.length} available
-            </span>
+            <div
+              style={{
+                backgroundColor: '#FFFFFF',
+                border: `1px solid ${theme.colors.borderLight}`,
+                padding: '6px 14px',
+                borderRadius: theme.radii.full,
+                fontSize: '0.85rem',
+                fontWeight: 800,
+                color: theme.colors.brandNavy,
+              }}
+            >
+              {filtered.length} partners available
+            </div>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '48px', color: theme.colors.textSecondary }}>
-              Loading services...
+            <div style={{ textAlign: 'center', padding: '60px', color: theme.colors.textSecondary }}>
+              Loading nearby partners...
             </div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', color: theme.colors.textSecondary }}>
-              No services found matching your criteria in {location.name}.
+            <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}` }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: '1.2rem', color: theme.colors.primaryNavy }}>No services found in this category</h3>
+              <p style={{ margin: 0, color: theme.colors.textMuted, fontSize: '0.9rem' }}>Try choosing another category or click "Change City" to search globally.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
               {filtered.map((merchant) => (
                 <div
                   key={merchant.id}
                   style={{
                     backgroundColor: '#FFFFFF',
                     borderRadius: theme.radii.xl,
-                    padding: '20px',
+                    padding: '24px',
                     border: `1px solid ${theme.colors.borderLight}`,
                     boxShadow: theme.shadows.card,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    gap: '16px',
-                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    gap: '18px',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = theme.shadows.cardHover;
+                    e.currentTarget.style.borderColor = 'rgba(255, 122, 0, 0.3)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = theme.shadows.card;
+                    e.currentTarget.style.borderColor = theme.colors.borderLight;
                   }}
                 >
+                  {/* Top card info */}
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <div
                       style={{
-                        width: '60px',
-                        height: '60px',
+                        width: '64px',
+                        height: '64px',
                         borderRadius: theme.radii.lg,
-                        backgroundColor: '#F1F5F9',
+                        backgroundColor: '#F0FDFA',
+                        border: '1.5px solid #CCFBF1',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                       }}
                     >
-                      <Store size={26} color={theme.colors.primaryNavy} />
+                      <Store size={28} color={theme.colors.tealAccent} />
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <h4 style={{ margin: 0, fontSize: '1.12rem', fontWeight: 900, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {merchant.shop_name}
                         </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                          <Star size={14} fill="#F59E0B" color="#F59E0B" />
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: theme.colors.textPrimary }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            backgroundColor: '#FFFBEB',
+                            border: '1px solid #FDE68A',
+                            padding: '2px 8px',
+                            borderRadius: theme.radii.full,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#92400E' }}>
                             {merchant.rating || '4.8'}
                           </span>
                         </div>
                       </div>
 
-                      <div style={{ fontSize: '0.85rem', color: theme.colors.textSecondary, marginTop: '2px', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.85rem', color: theme.colors.tealAccent, marginTop: '3px', fontWeight: 700 }}>
                         {merchant.service_type}
                       </div>
 
@@ -603,13 +698,14 @@ export default function CustomerHome({ onNavigate }) {
                       )}
 
                       {merchant.distanceKm !== null && (
-                        <div style={{ fontSize: '0.75rem', color: theme.colors.accentBlue, fontWeight: 700, marginTop: '4px' }}>
+                        <div style={{ display: 'inline-block', backgroundColor: '#F1F5F9', color: theme.colors.brandNavy, fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', marginTop: '6px' }}>
                           📍 {merchant.distanceKm} km away
                         </div>
                       )}
                     </div>
                   </div>
 
+                  {/* Pricing and Book Now CTA in Logo Orange */}
                   <div
                     style={{
                       display: 'flex',
@@ -620,8 +716,10 @@ export default function CustomerHome({ onNavigate }) {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '0.72rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 700 }}>Starting from</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                      <div style={{ fontSize: '0.7rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
+                        Starting from
+                      </div>
+                      <div style={{ fontSize: '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
                         ₹{merchant.base_price || 299}
                       </div>
                     </div>
@@ -629,19 +727,25 @@ export default function CustomerHome({ onNavigate }) {
                     <button
                       onClick={() => handleOpenBookingModal(merchant)}
                       style={{
-                        backgroundColor: theme.colors.primaryNavy,
+                        background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                         color: '#FFFFFF',
                         border: 'none',
-                        borderRadius: theme.radii.md,
-                        padding: '10px 22px',
-                        fontSize: '0.9rem',
-                        fontWeight: 700,
+                        borderRadius: theme.radii.full,
+                        padding: '11px 24px',
+                        fontSize: '0.92rem',
+                        fontWeight: 800,
                         cursor: 'pointer',
-                        transition: 'background 0.2s',
-                        boxShadow: '0 4px 6px -1px rgba(15, 23, 42, 0.2)',
+                        boxShadow: theme.shadows.orangeGlow,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'transform 0.15s',
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                     >
-                      Book Now
+                      <span>Book Now</span>
+                      <ArrowRight size={16} />
                     </button>
                   </div>
                 </div>
@@ -659,7 +763,7 @@ export default function CustomerHome({ onNavigate }) {
         onSelectLocation={(loc) => setLocation(loc)}
       />
 
-      {/* Book Appointment Modal */}
+      {/* Two-step Appointment Booking Modal */}
       {selectedMerchantForBooking && (
         <BookingModal
           merchant={selectedMerchantForBooking}
