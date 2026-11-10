@@ -48,6 +48,24 @@ const CATEGORIES = [
   { label: 'Fitness & Yoga', icon: '🧘' },
 ];
 
+// Category-specific cover image gradients & photos for luxury card visuals
+const SERVICE_COVERS = {
+  salon: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
+  'spa & massage': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80',
+  'dental clinic': 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80',
+  'car detailing': 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=600&q=80',
+  'fitness & yoga': 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80',
+  default: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+};
+
+function getServiceCover(serviceType) {
+  const key = (serviceType || '').toLowerCase();
+  for (const [k, url] of Object.entries(SERVICE_COVERS)) {
+    if (key.includes(k)) return url;
+  }
+  return SERVICE_COVERS.default;
+}
+
 export default function CustomerHome({ onNavigate }) {
   const [merchants, setMerchants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -455,7 +473,7 @@ export default function CustomerHome({ onNavigate }) {
             gap: '10px',
             overflowX: 'auto',
             paddingBottom: '8px',
-            marginBottom: '28px',
+            marginBottom: '32px',
           }}
         >
           {CATEGORIES.map((cat) => {
@@ -488,95 +506,6 @@ export default function CustomerHome({ onNavigate }) {
               </button>
             );
           })}
-        </div>
-
-        {/* Discovery Hero Banner with Brand Color Geometry */}
-        <div
-          style={{
-            borderRadius: theme.radii.xl,
-            marginBottom: '36px',
-            position: 'relative',
-            overflow: 'hidden',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'linear-gradient(135deg, #0F1E36 0%, #1E3A5F 55%, #134E5E 100%)',
-            color: '#FFFFFF',
-            padding: '36px 28px',
-            boxShadow: '0 15px 35px -5px rgba(15, 30, 54, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '24px',
-          }}
-        >
-          {/* Subtle Orange Glow Sphere in Hero */}
-          <div
-            style={{
-              position: 'absolute',
-              right: '-60px',
-              top: '-60px',
-              width: '240px',
-              height: '240px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255, 122, 0, 0.25) 0%, rgba(255, 122, 0, 0) 70%)',
-              pointerEvents: 'none',
-            }}
-          />
-
-          <div style={{ position: 'relative', zIndex: 2, maxWidth: '640px' }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: 'rgba(255, 122, 0, 0.2)',
-                border: '1px solid rgba(255, 122, 0, 0.4)',
-                color: '#FFB066',
-                padding: '4px 12px',
-                borderRadius: theme.radii.full,
-                fontSize: '0.75rem',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: '12px',
-              }}
-            >
-              <Sparkles size={12} /> Instant Appointments Confirmed
-            </div>
-
-            <h3 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, letterSpacing: '-0.5px', color: '#FFFFFF' }}>
-              Service Discovery in {location.shortName || location.name}
-            </h3>
-            <p style={{ margin: '8px 0 0', color: '#CBD5E1', fontSize: '0.92rem', lineHeight: 1.5 }}>
-              Coordinates: {location.lat.toFixed(4)}°N, {location.lng.toFixed(4)}°E • Pinpointing certified salons, wellness spas & clinics closest to you.
-            </p>
-          </div>
-
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <button
-              onClick={() => setShowLocationModal(true)}
-              style={{
-                background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
-                border: 'none',
-                color: '#FFFFFF',
-                borderRadius: theme.radii.full,
-                padding: '12px 24px',
-                fontSize: '0.9rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: theme.shadows.orangeGlow,
-                transition: 'transform 0.15s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <Navigation size={15} />
-              <span>Change City / Auto-Detect</span>
-            </button>
-          </div>
         </div>
 
         {/* Services Section Header */}
@@ -615,143 +544,206 @@ export default function CustomerHome({ onNavigate }) {
               <p style={{ margin: 0, color: theme.colors.textMuted, fontSize: '0.9rem' }}>Try choosing another category or click "Change City" to search globally.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
-              {filtered.map((merchant) => (
-                <div
-                  key={merchant.id}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: theme.radii.xl,
-                    padding: '24px',
-                    border: `1px solid ${theme.colors.borderLight}`,
-                    boxShadow: theme.shadows.card,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '18px',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = theme.shadows.cardHover;
-                    e.currentTarget.style.borderColor = 'rgba(255, 122, 0, 0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = theme.shadows.card;
-                    e.currentTarget.style.borderColor = theme.colors.borderLight;
-                  }}
-                >
-                  {/* Top card info */}
-                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <div
-                      style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: theme.radii.lg,
-                        backgroundColor: '#F0FDFA',
-                        border: '1.5px solid #CCFBF1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Store size={28} color={theme.colors.tealAccent} />
-                    </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '26px' }}>
+              {filtered.map((merchant) => {
+                const coverImg = getServiceCover(merchant.service_type);
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <h4 style={{ margin: 0, fontSize: '1.12rem', fontWeight: 900, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {merchant.shop_name}
-                        </h4>
-                        <div
+                return (
+                  <div
+                    key={merchant.id}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '20px',
+                      border: `1px solid ${theme.colors.borderLight}`,
+                      boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.06)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-6px)';
+                      e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(15, 30, 54, 0.12)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 122, 0, 0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 20px -2px rgba(15, 30, 54, 0.06)';
+                      e.currentTarget.style.borderColor = theme.colors.borderLight;
+                    }}
+                  >
+                    {/* Visual Cover Header */}
+                    <div style={{ position: 'relative', height: '140px', width: '100%', overflow: 'hidden' }}>
+                      <img
+                        src={coverImg}
+                        alt={merchant.shop_name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.4s ease',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%)',
+                        }}
+                      />
+
+                      {/* Distance & Category Badges over image */}
+                      <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                        <span
                           style={{
+                            backgroundColor: 'rgba(15, 30, 54, 0.75)',
+                            backdropFilter: 'blur(4px)',
+                            color: '#FFFFFF',
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            padding: '4px 10px',
+                            borderRadius: '999px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
-                            backgroundColor: '#FFFBEB',
-                            border: '1px solid #FDE68A',
-                            padding: '2px 8px',
-                            borderRadius: theme.radii.full,
-                            flexShrink: 0,
                           }}
                         >
-                          <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#92400E' }}>
-                            {merchant.rating || '4.8'}
-                          </span>
-                        </div>
+                          <Sparkles size={11} color={theme.colors.sunsetOrange} /> {merchant.service_type || 'Service'}
+                        </span>
                       </div>
-
-                      <div style={{ fontSize: '0.85rem', color: theme.colors.tealAccent, marginTop: '3px', fontWeight: 700 }}>
-                        {merchant.service_type}
-                      </div>
-
-                      {merchant.address && (
-                        <div style={{ fontSize: '0.78rem', color: theme.colors.textMuted, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <MapPin size={12} flexShrink={0} />
-                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {merchant.address}
-                          </span>
-                        </div>
-                      )}
 
                       {merchant.distanceKm !== null && (
-                        <div style={{ display: 'inline-block', backgroundColor: '#F1F5F9', color: theme.colors.brandNavy, fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', marginTop: '6px' }}>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(4px)',
+                            color: theme.colors.primaryNavy,
+                            fontSize: '0.72rem',
+                            fontWeight: 800,
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                          }}
+                        >
                           📍 {merchant.distanceKm} km away
                         </div>
                       )}
+
+                      {/* Rating chip pinned bottom right of image */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          right: '12px',
+                          backgroundColor: '#FFFFFF',
+                          padding: '3px 9px',
+                          borderRadius: '999px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        <Star size={13} fill="#F59E0B" color="#F59E0B" />
+                        <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#0F172A' }}>
+                          {merchant.rating || '4.8'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Content Body */}
+                    <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                      <div>
+                        <h4
+                          style={{
+                            margin: '0 0 6px',
+                            fontSize: '1.2rem',
+                            fontWeight: 900,
+                            color: theme.colors.primaryNavy,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {merchant.shop_name}
+                        </h4>
+
+                        {merchant.address && (
+                          <div
+                            style={{
+                              fontSize: '0.82rem',
+                              color: theme.colors.textMuted,
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '6px',
+                              lineHeight: 1.4,
+                              minHeight: '36px',
+                            }}
+                          >
+                            <MapPin size={14} color={theme.colors.sunsetOrange} style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {merchant.address}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pricing and Book Now CTA in Logo Orange */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderTop: `1px solid ${theme.colors.borderLight}`,
+                          paddingTop: '16px',
+                          marginTop: '16px',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '0.68rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
+                            Starting Price
+                          </div>
+                          <div style={{ fontSize: '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
+                            ₹{merchant.base_price || 299}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleOpenBookingModal(merchant)}
+                          style={{
+                            background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: theme.radii.full,
+                            padding: '11px 22px',
+                            fontSize: '0.9rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            boxShadow: theme.shadows.orangeGlow,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                        >
+                          <span>Book Now</span>
+                          <ArrowRight size={15} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Pricing and Book Now CTA in Logo Orange */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderTop: `1px solid ${theme.colors.borderLight}`,
-                      paddingTop: '16px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.7rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
-                        Starting from
-                      </div>
-                      <div style={{ fontSize: '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
-                        ₹{merchant.base_price || 299}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleOpenBookingModal(merchant)}
-                      style={{
-                        background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: theme.radii.full,
-                        padding: '11px 24px',
-                        fontSize: '0.92rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        boxShadow: theme.shadows.orangeGlow,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'transform 0.15s',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                    >
-                      <span>Book Now</span>
-                      <ArrowRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
