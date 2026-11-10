@@ -15,6 +15,13 @@ class Settings:
     RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
     RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
     
+    # Email OTP Configuration
+    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+    SMTP_USER = os.getenv("SMTP_USER", "bokivo.team@gmail.com")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+    SMTP_FROM = os.getenv("SMTP_FROM", "bokivo.team@gmail.com")
+
     # Storage
     CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "")
     CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "")

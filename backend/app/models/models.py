@@ -1,7 +1,6 @@
-from sqlalchemy import Column, String, ForeignKey, Enum, DateTime, Boolean, Decimal, Float, text
+from sqlalchemy import Column, String, ForeignKey, Enum, DateTime, Boolean, Numeric, Float, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base
-from geoalchemy2 import Geography
 import uuid
 import datetime
 
@@ -18,8 +17,8 @@ class User(Base):
     fcm_token = Column(String, nullable=True)
     
     # Relationships
-    merchant_profile = relationship("Merchant", back_populates="user", uselist=False)
-    customer_bookings = relationship("Booking", back_populates="customer", foreign_keys="Booking.customer_id")
+    merchant_profile = relationship("Merchant", back_populates="user", uselist=False, lazy="selectin")
+    customer_bookings = relationship("Booking", back_populates="customer", foreign_keys="Booking.customer_id", lazy="selectin")
 
 class Merchant(Base):
     __tablename__ = "merchants"
@@ -27,9 +26,10 @@ class Merchant(Base):
     id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
     shop_name = Column(String, nullable=False)
     address = Column(String, nullable=False)
-    location = Column(Geography(geometry_type='POINT', srid=4326), nullable=False)
+    latitude = Column(Float, default=12.9716)
+    longitude = Column(Float, default=77.5946)
     service_type = Column(String, nullable=False)
-    base_price = Column(Decimal(precision=10, scale=2), nullable=False)
+    base_price = Column(Numeric(precision=10, scale=2), nullable=False)
     rating = Column(Float, default=0.0)
     is_subscribed = Column(Boolean, default=False)
     subscription_end = Column(DateTime, nullable=True)

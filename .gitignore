@@ -4,6 +4,15 @@ __pycache__/
 *$py.class
 venv/
 .env
+*.env
+*.db
+*.sqlite3
+
+# Node / Web
+node_modules/
+dist/
+dist-ssr/
+*.local
 
 # Flutter/Dart
 .dart_tool/

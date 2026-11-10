@@ -1,6 +1,6 @@
-# Bookeasy Backend (FastAPI)
+# Bokivo Backend (FastAPI)
 
-This is the Python-based backend for the Bookeasy application.
+This is the Python-based backend for the Bokivo application.
 
 ## 🚀 Features
 - **Auth**: JWT-based Authentication with Role-Based Access Control (Customer/Merchant).

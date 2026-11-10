@@ -4,16 +4,45 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database import get_db
 from app.models.models import User, Merchant
-from app.schemas.schemas import UserCreate, UserResponse, Token
+from app.schemas.schemas import UserCreate, UserResponse, Token, SendOTPRequest, VerifyOTPRequest
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.utils.geo import geocode_address
+from app.utils.email_otp import send_verification_otp, verify_otp
 from datetime import timedelta
 from app.core.config import settings
 
 router = APIRouter()
 
+@router.post("/send-otp")
+async def send_otp(req: SendOTPRequest, db: AsyncSession = Depends(get_db)):
+    # Check if email is already taken
+    query = select(User).where(User.email == req.email)
+    result = await db.execute(query)
+    if result.scalars().first():
+        raise HTTPException(status_code=400, detail="Account with this email already exists")
+
+    otp = await send_verification_otp(req.email)
+    return {
+        "success": True,
+        "message": f"Verification OTP sent to {req.email}",
+        # For seamless developer testing when SMTP password not yet provided
+        "dev_hint": otp if not settings.SMTP_PASSWORD else None
+    }
+
+@router.post("/verify-otp")
+async def check_otp(req: VerifyOTPRequest):
+    valid = verify_otp(req.email, req.otp)
+    if not valid:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+    return {"success": True, "message": "Email verified successfully"}
+
 @router.post("/signup", response_model=UserResponse)
 async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+    # If OTP is sent, verify it
+    if user_in.otp:
+        if not verify_otp(user_in.email, user_in.otp):
+            raise HTTPException(status_code=400, detail="Invalid or expired verification OTP")
+
     # Check if user already exists
     query = select(User).where(User.email == user_in.email)
     result = await db.execute(query)
@@ -41,7 +70,6 @@ async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         try:
             lat, lng = await geocode_address(user_in.address)
         except Exception:
-            # Fallback Bangalore for demo
             lat, lng = 12.9716, 77.5946
             
         new_merchant = Merchant(
@@ -50,7 +78,8 @@ async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
             address=user_in.address,
             service_type=user_in.service_type or "General",
             base_price=user_in.base_price or 0.0,
-            location=f'SRID=4326;POINT({lng} {lat})' # Longitude Latitude in PostGIS
+            latitude=lat,
+            longitude=lng
         )
         db.add(new_merchant)
     

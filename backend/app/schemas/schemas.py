@@ -13,10 +13,18 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    otp: Optional[str] = None
     shop_name: Optional[str] = None
     address: Optional[str] = None
     service_type: Optional[str] = None
     base_price: Optional[Decimal] = None
+
+class SendOTPRequest(BaseModel):
+    email: EmailStr
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
 
 class MerchantProfile(BaseModel):
     shop_name: str
@@ -59,6 +67,10 @@ class BookingResponse(BaseModel):
     status: str
     booking_date: datetime
     created_at: datetime
+    shop_name: Optional[str] = None
+    service_type: Optional[str] = None
+    address: Optional[str] = None
+    base_price: Optional[Decimal] = None
 
     class Config:
         from_attributes = True
