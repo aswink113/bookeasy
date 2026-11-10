@@ -5,9 +5,10 @@ from app.database import get_db
 from app.models.models import Booking, User, Merchant
 from app.schemas.schemas import BookingCreate, BookingResponse, BookingUpdate
 from app.utils.fcm import send_push_notification
-from app.utils.email_otp import send_booking_confirmation_email
+from app.utils.email_otp import send_booking_confirmation_email, send_booking_cancellation_email
 from typing import List
 from uuid import UUID
+from datetime import datetime, date, time as dtime
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
@@ -31,12 +32,56 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+@router.get("/booked-slots")
+async def get_booked_slots(merchant_id: UUID, date_str: str, db: AsyncSession = Depends(get_db)):
+    """Return list of booked slot strings (e.g., ['10:00 AM', '02:30 PM']) for a given merchant and date (YYYY-MM-DD)"""
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    start_of_day = datetime.combine(target_date, dtime.min)
+    end_of_day = datetime.combine(target_date, dtime.max)
+
+    # All active bookings for this merchant that are not cancelled or declined
+    query = select(Booking).where(
+        Booking.merchant_id == merchant_id,
+        Booking.booking_date >= start_of_day,
+        Booking.booking_date <= end_of_day,
+        Booking.status.notin_(["cancelled", "declined"])
+    )
+    result = await db.execute(query)
+    bookings = result.scalars().all()
+
+    # Format into 12-hour slot strings e.g. "10:00 AM"
+    booked_slots = []
+    for b in bookings:
+        # e.g., '10:00 AM'
+        slot_str = b.booking_date.strftime("%I:%M %p")
+        if slot_str not in booked_slots:
+            booked_slots.append(slot_str)
+
+    return {"booked_slots": booked_slots}
+
 @router.post("/", response_model=BookingResponse)
 async def create_booking(booking_in: BookingCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     # Normalize datetime: make it naive UTC datetime for PostgreSQL TIMESTAMP WITHOUT TIME ZONE
     b_date = booking_in.booking_date
     if b_date.tzinfo is not None:
         b_date = b_date.replace(tzinfo=None)
+
+    # Check if slot is already booked for this merchant
+    slot_conflict_query = select(Booking).where(
+        Booking.merchant_id == booking_in.merchant_id,
+        Booking.booking_date == b_date,
+        Booking.status.notin_(["cancelled", "declined"])
+    )
+    conflict_result = await db.execute(slot_conflict_query)
+    if conflict_result.scalars().first():
+        raise HTTPException(
+            status_code=400,
+            detail="This slot is already booked and locked by another customer. Please choose a different slot."
+        )
 
     # Create booking request
     new_booking = Booking(
@@ -135,6 +180,21 @@ async def cancel_booking(booking_id: UUID, current_user: User = Depends(get_curr
     m_res = await db.execute(select(Merchant).where(Merchant.id == booking.merchant_id))
     m = m_res.scalars().first()
     
+    # Send Cancellation Confirmation Email to Customer
+    try:
+        formatted_date = booking.booking_date.strftime("%A, %d %B %Y at %I:%M %p")
+        await send_booking_cancellation_email(
+            customer_email=current_user.email,
+            customer_name=current_user.name,
+            shop_name=m.shop_name if m else "Service Partner",
+            service_type=m.service_type if m else "General Service",
+            booking_date=formatted_date,
+            booking_id=str(booking.id),
+            cancelled_by="You (Customer)"
+        )
+    except Exception as e:
+        print(f"[CANCELLATION EMAIL ERROR]: {e}")
+    
     return BookingResponse(
         id=booking.id,
         customer_id=booking.customer_id,
@@ -194,7 +254,7 @@ async def update_booking_status(booking_id: UUID, status_update: BookingUpdate, 
     booking.status = status_update.status
     await db.flush()
     
-    # Notify Customer
+    # Notify Customer via FCM Push Notification
     query = select(User).where(User.id == booking.customer_id)
     result = await db.execute(query)
     customer_user = result.scalars().first()
@@ -206,6 +266,24 @@ async def update_booking_status(booking_id: UUID, status_update: BookingUpdate, 
             body=f"Your booking has been {status_update.status}",
             data={"booking_id": str(booking.id)}
         )
+    
+    # If merchant declined or cancelled appointment, send Cancellation Email to customer!
+    if status_update.status in ["declined", "cancelled"] and customer_user:
+        try:
+            m_res = await db.execute(select(Merchant).where(Merchant.id == booking.merchant_id))
+            m = m_res.scalars().first()
+            formatted_date = booking.booking_date.strftime("%A, %d %B %Y at %I:%M %p")
+            await send_booking_cancellation_email(
+                customer_email=customer_user.email,
+                customer_name=customer_user.name,
+                shop_name=m.shop_name if m else "Service Partner",
+                service_type=m.service_type if m else "General Service",
+                booking_date=formatted_date,
+                booking_id=str(booking.id),
+                cancelled_by=f"Service Partner ({m.shop_name if m else 'Merchant'})"
+            )
+        except Exception as e:
+            print(f"[MERCHANT CANCELLATION EMAIL ERROR]: {e}")
         
     await db.commit()
     return booking

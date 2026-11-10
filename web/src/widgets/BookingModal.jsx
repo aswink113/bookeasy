@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -9,9 +9,11 @@ import {
   ArrowLeft, 
   CheckCircle2, 
   Sparkles,
-  Store
+  Store,
+  Lock
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
+import { apiService } from '../services/apiService';
 
 export default function BookingModal({ merchant, onClose, onConfirm }) {
   // Step 1: 'datetime' (Choose Date & Slot) -> Step 2: 'confirm' (Review summary & Confirm)
@@ -36,9 +38,46 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
   const datesList = getDates();
 
   const [selectedDate, setSelectedDate] = useState(datesList[0].iso);
-  const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [lockedSlots, setLockedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Fetch booked slots whenever merchant or selectedDate changes
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchLockedSlots() {
+      if (!merchant?.id || !selectedDate) return;
+      setLoadingSlots(true);
+      try {
+        const slots = await apiService.getBookedSlots(merchant.id, selectedDate);
+        if (isMounted) {
+          setLockedSlots(slots);
+          // If current selected slot is locked or empty, select the first available slot
+          const allCandidateSlots = [
+            '09:00 AM', '10:00 AM', '11:00 AM', '11:30 AM',
+            '12:30 PM', '01:30 PM', '02:30 PM', '03:30 PM',
+            '04:30 PM', '05:30 PM', '06:30 PM', '07:30 PM'
+          ];
+          const available = allCandidateSlots.filter(s => !slots.includes(s));
+          if (available.length > 0) {
+            setSelectedSlot(prev => (slots.includes(prev) || !prev ? available[0] : prev));
+          } else {
+            setSelectedSlot('');
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching booked slots:', err);
+      } finally {
+        if (isMounted) setLoadingSlots(false);
+      }
+    }
+    fetchLockedSlots();
+    return () => {
+      isMounted = false;
+    };
+  }, [merchant?.id, selectedDate]);
 
   // Categorized slots (Morning, Afternoon, Evening)
   const timeCategories = [
@@ -65,6 +104,10 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
 
   const handleProceedToConfirm = (e) => {
     e.preventDefault();
+    if (!selectedSlot) {
+      alert('Please select an available time slot.');
+      return;
+    }
     setStep('confirm');
   };
 
@@ -271,10 +314,19 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
 
               {/* Time Slots Categories */}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy, marginBottom: '12px' }}>
-                  <Clock size={16} color={theme.colors.accentBlue} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-                  Select Time Slot
-                </label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                    <Clock size={16} color={theme.colors.accentBlue} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+                    Select Time Slot
+                  </label>
+                  {loadingSlots ? (
+                    <span style={{ fontSize: '0.75rem', color: theme.colors.textMuted }}>Checking availability...</span>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: '#EF4444', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Lock size={12} color="#EF4444" /> Locked slots are unavailable
+                    </span>
+                  )}
+                </div>
 
                 {timeCategories.map((cat, idx) => (
                   <div key={idx} style={{ marginBottom: '14px' }}>
@@ -283,7 +335,36 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                       {cat.slots.map((slot) => {
-                        const isSelected = selectedSlot === slot;
+                        const isLocked = lockedSlots.includes(slot);
+                        const isSelected = selectedSlot === slot && !isLocked;
+
+                        if (isLocked) {
+                          return (
+                            <div
+                              key={slot}
+                              title="This slot is already booked and locked by another user"
+                              style={{
+                                padding: '10px 4px',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                borderRadius: theme.radii.md,
+                                border: '1px solid #FCA5A5',
+                                backgroundColor: '#FEF2F2',
+                                color: '#DC2626',
+                                cursor: 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                opacity: 0.9,
+                              }}
+                            >
+                              <Lock size={12} color="#DC2626" />
+                              <span>{slot}</span>
+                            </div>
+                          );
+                        }
+
                         return (
                           <button
                             key={slot}

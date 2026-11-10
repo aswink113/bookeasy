@@ -217,5 +217,55 @@ export const apiService = {
     }
     return await res.json();
   },
+
+  /**
+   * Fetch booked / locked slots for a given merchant and date (YYYY-MM-DD)
+   */
+  async getBookedSlots(merchantId, dateStr) {
+    const res = await fetch(`${BASE_URL}/bookings/booked-slots?merchant_id=${merchantId}&date_str=${dateStr}`);
+    if (!res.ok) return [];
+    const data = await res.json().catch(() => ({ booked_slots: [] }));
+    return data.booked_slots || [];
+  },
+
+  /**
+   * Get merchant's bookings (Partner Portal)
+   */
+  async getMerchantBookings() {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/bookings/merchant`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to fetch merchant bookings');
+    }
+    return await res.json();
+  },
+
+  /**
+   * Update booking status (accept, decline, cancel) by merchant
+   */
+  async updateBookingStatus(bookingId, newStatus) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/bookings/${bookingId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to update booking status');
+    }
+    return await res.json();
+  },
 };
 
