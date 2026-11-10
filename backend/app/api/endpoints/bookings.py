@@ -33,11 +33,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
 
 @router.post("/", response_model=BookingResponse)
 async def create_booking(booking_in: BookingCreate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Normalize datetime: make it naive UTC datetime for PostgreSQL TIMESTAMP WITHOUT TIME ZONE
+    b_date = booking_in.booking_date
+    if b_date.tzinfo is not None:
+        b_date = b_date.replace(tzinfo=None)
+
     # Create booking request
     new_booking = Booking(
         customer_id=current_user.id,
         merchant_id=booking_in.merchant_id,
-        booking_date=booking_in.booking_date,
+        booking_date=b_date,
         status="pending"
     )
     db.add(new_booking)
