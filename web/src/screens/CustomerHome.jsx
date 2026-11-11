@@ -729,13 +729,13 @@ export default function CustomerHome({ onNavigate }) {
                       </div>
                     </div>
 
-                    {/* Card Content Body */}
-                    <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                    {/* Card Content Body - Slim & Crisp */}
+                    <div style={{ padding: '12px 16px 14px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                       <div>
                         <h4
                           style={{
-                            margin: '0 0 6px',
-                            fontSize: '1.2rem',
+                            margin: '0 0 3px',
+                            fontSize: '1.08rem',
                             fontWeight: 900,
                             color: theme.colors.primaryNavy,
                             whiteSpace: 'nowrap',
@@ -749,17 +749,19 @@ export default function CustomerHome({ onNavigate }) {
                         {merchant.address && (
                           <div
                             style={{
-                              fontSize: '0.82rem',
+                              fontSize: '0.78rem',
                               color: theme.colors.textMuted,
                               display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '6px',
-                              lineHeight: 1.4,
-                              minHeight: '36px',
+                              alignItems: 'center',
+                              gap: '5px',
+                              lineHeight: 1.3,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                             }}
                           >
-                            <MapPin size={14} color={theme.colors.sunsetOrange} style={{ flexShrink: 0, marginTop: '2px' }} />
-                            <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            <MapPin size={12} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {merchant.address}
                             </span>
                           </div>
@@ -773,15 +775,15 @@ export default function CustomerHome({ onNavigate }) {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           borderTop: `1px solid ${theme.colors.borderLight}`,
-                          paddingTop: '16px',
-                          marginTop: '16px',
+                          paddingTop: '10px',
+                          marginTop: '10px',
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: '0.68rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
+                          <div style={{ fontSize: '0.64rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
                             {priceInfo.isRange ? 'Price Range' : 'Starting Price'}
                           </div>
-                          <div style={{ fontSize: priceInfo.isRange ? '1.2rem' : '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
+                          <div style={{ fontSize: priceInfo.isRange ? '1.05rem' : '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
                             {priceInfo.display}
                           </div>
                         </div>
@@ -796,21 +798,21 @@ export default function CustomerHome({ onNavigate }) {
                             color: '#FFFFFF',
                             border: 'none',
                             borderRadius: theme.radii.full,
-                            padding: '11px 22px',
-                            fontSize: '0.9rem',
+                            padding: '8px 18px',
+                            fontSize: '0.84rem',
                             fontWeight: 800,
                             cursor: 'pointer',
                             boxShadow: theme.shadows.orangeGlow,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
+                            gap: '5px',
                             transition: 'all 0.15s',
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
                           onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                         >
                           <span>Book Now</span>
-                          <ArrowRight size={15} />
+                          <ArrowRight size={14} />
                         </button>
                       </div>
                     </div>
