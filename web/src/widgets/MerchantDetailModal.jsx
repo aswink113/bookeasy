@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Star, 
@@ -12,9 +12,13 @@ import {
   Camera, 
   DollarSign, 
   Layers,
-  ArrowRight
+  ArrowRight,
+  MessageSquare,
+  ThumbsUp,
+  UserCheck
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
+import { apiService } from '../services/apiService';
 
 /**
  * MerchantDetailModal
@@ -22,7 +26,8 @@ import { theme } from '../theme/appTheme';
  * 1. High-res photo gallery with thumbnail switcher
  * 2. Merchant overview (rating, address, distance, status)
  * 3. Sub-categories / detailed services list with custom photos, names, durations, and exact prices
- * 4. Direct Book Now trigger selecting any specific sub-service
+ * 4. Verified Customer Reviews & Ratings sub-section (5-star ratings, timestamps, and customer comments)
+ * 5. Direct Book Now trigger selecting any specific sub-service
  */
 export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookSubService }) {
   if (!isOpen || !merchant) return null;
@@ -33,6 +38,27 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
 
   const [activePhoto, setActivePhoto] = useState(gallery[0]);
   const [selectedSubService, setSelectedSubService] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  useEffect(() => {
+    if (merchant?.id) {
+      loadReviews();
+    }
+  }, [merchant?.id]);
+
+  const loadReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const data = await apiService.getMerchantReviews(merchant.id);
+      setReviews(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
+      setReviews([]);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
   const subServices = Array.isArray(merchant.sub_services) && merchant.sub_services.length > 0
     ? merchant.sub_services
@@ -202,7 +228,7 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
                 }}
               >
                 <Star size={15} fill="#F59E0B" color="#F59E0B" />
-                <span>{merchant.rating ? merchant.rating.toFixed(1) : '4.8'}</span>
+                <span>{merchant.rating ? merchant.rating.toFixed(1) : '5.0'}</span>
               </div>
 
               {merchant.distanceKm !== undefined && (
@@ -249,53 +275,72 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
 
           {/* Gallery Thumbnails Slider */}
           {gallery.length > 1 && (
-            <div style={{ display: 'flex', gap: '10px', marginTop: '12px', overflowX: 'auto', paddingBottom: '6px' }}>
-              {gallery.map((photo, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActivePhoto(photo)}
-                  style={{
-                    width: '84px',
-                    height: '54px',
-                    borderRadius: '10px',
-                    overflow: 'hidden',
-                    border: activePhoto === photo ? `2.5px solid ${theme.colors.sunsetOrange}` : '1.5px solid #E2E8F0',
-                    cursor: 'pointer',
-                    padding: 0,
-                    flexShrink: 0,
-                    opacity: activePhoto === photo ? 1 : 0.65,
-                    transform: activePhoto === photo ? 'scale(1.03)' : 'scale(1)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <img src={photo} alt={`Thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </button>
-              ))}
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                marginTop: '14px',
+                overflowX: 'auto',
+                paddingBottom: '4px',
+              }}
+            >
+              {gallery.map((photoUrl, idx) => {
+                const isActive = activePhoto === photoUrl;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePhoto(photoUrl)}
+                    style={{
+                      width: '72px',
+                      height: '52px',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      border: isActive ? `2.5px solid ${theme.colors.sunsetOrange}` : '2px solid transparent',
+                      padding: 0,
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      boxShadow: isActive ? '0 4px 10px rgba(255, 122, 0, 0.3)' : 'none',
+                      opacity: isActive ? 1 : 0.65,
+                      transition: 'all 0.15s ease',
+                      backgroundColor: '#F1F5F9',
+                    }}
+                  >
+                    <img
+                      src={photoUrl}
+                      alt={`Thumbnail ${idx + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </button>
+                );
+              })}
             </div>
           )}
 
-          {/* Address & Price Range Meta */}
+          {/* Location & Quick Meta Row */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              margin: '18px 0 24px',
-              padding: '12px 18px',
+              margin: '20px 0 24px',
+              padding: '14px 18px',
               backgroundColor: '#F8FAFC',
               borderRadius: '16px',
               border: '1px solid #E2E8F0',
-              gap: '14px',
               flexWrap: 'wrap',
+              gap: '12px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', color: theme.colors.textSecondary }}>
-              <MapPin size={16} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
-              <span style={{ fontWeight: 600 }}>{merchant.address}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MapPin size={16} color={theme.colors.sunsetOrange} />
+              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: theme.colors.primaryNavy }}>
+                {merchant.address || 'Location on file'}
+              </span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.colors.textMuted, textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.78rem', color: theme.colors.textMuted, fontWeight: 700, textTransform: 'uppercase' }}>
                 Price Range:
               </span>
               <span style={{ fontSize: '1rem', fontWeight: 900, color: theme.colors.sunsetOrange }}>
@@ -305,7 +350,7 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
           </div>
 
           {/* Sub-Categories & Services Breakdown */}
-          <div>
+          <div style={{ marginBottom: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Layers size={18} color={theme.colors.sunsetOrange} />
@@ -374,7 +419,7 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
                           {sub.duration && (
-                            <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+                            <span style={{ fontSize: '0.76rem', color: theme.colors.textMuted, display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <Clock size={12} /> {sub.duration}
                             </span>
                           )}
@@ -422,6 +467,152 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
                 );
               })}
             </div>
+          </div>
+
+          {/* =========================================================================
+              REVIEWS & RATINGS SUB-SECTION
+          ========================================================================== */}
+          <div
+            style={{
+              paddingTop: '20px',
+              borderTop: '1px solid #E2E8F0',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={18} color={theme.colors.sunsetOrange} />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
+                  Customer Reviews & Ratings
+                </h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#FEF3C7', padding: '4px 10px', borderRadius: '12px' }}>
+                  <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#92400E' }}>
+                    {merchant.rating ? merchant.rating.toFixed(1) : '5.0'}
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: 700 }}>
+                  ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            </div>
+
+            {loadingReviews ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: theme.colors.textMuted, fontSize: '0.85rem' }}>
+                Loading verified reviews...
+              </div>
+            ) : reviews.length === 0 ? (
+              <div
+                style={{
+                  backgroundColor: '#F8FAFC',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  textAlign: 'center',
+                  border: '1px dashed #CBD5E1',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '8px' }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} size={18} fill="#E2E8F0" color="#CBD5E1" />
+                  ))}
+                </div>
+                <h4 style={{ margin: '0 0 4px', fontSize: '0.95rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                  No customer reviews yet
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: theme.colors.textMuted }}>
+                  Be the first to experience services at {merchant.shop_name} and leave a verified rating!
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {reviews.map((rev) => {
+                  const revDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  }) : 'Recently';
+
+                  return (
+                    <div
+                      key={rev.id}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        boxShadow: '0 1px 4px rgba(15, 30, 54, 0.03)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div
+                            style={{
+                              width: '34px',
+                              height: '34px',
+                              borderRadius: '50%',
+                              backgroundColor: '#EFF6FF',
+                              color: '#1D4ED8',
+                              fontWeight: 800,
+                              fontSize: '0.82rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid #DBEAFE',
+                            }}
+                          >
+                            {(rev.customer_name || 'C').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                                {rev.customer_name}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 800,
+                                  backgroundColor: '#DCFCE7',
+                                  color: '#166534',
+                                  padding: '2px 6px',
+                                  borderRadius: '6px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '2px',
+                                }}
+                              >
+                                <Check size={10} /> Verified Booking
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '0.72rem', color: theme.colors.textMuted }}>
+                              {revDate}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Star Rating Display */}
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              size={14}
+                              fill={star <= Math.round(rev.rating) ? '#F59E0B' : '#E2E8F0'}
+                              color={star <= Math.round(rev.rating) ? '#F59E0B' : '#CBD5E1'}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {rev.comment && (
+                        <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: theme.colors.primaryNavy, lineHeight: '1.45' }}>
+                          "{rev.comment}"
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -472,4 +663,3 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
     </div>
   );
 }
-

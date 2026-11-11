@@ -404,6 +404,18 @@ export const apiService = {
   },
 
   /**
+   * Fetch verified customer reviews for a merchant
+   */
+  async getMerchantReviews(merchantId) {
+    const res = await fetch(`${BASE_URL}/merchants/${merchantId}/reviews`);
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to fetch reviews');
+    }
+    return data;
+  },
+
+  /**
    * Submit 12-digit UPI UTR for Subscription or 14-day Free Trial Activation
    */
   async submitSubscriptionUTR(utrNumber, planCycle, amount, merchantUpiId) {
