@@ -18,6 +18,7 @@ class UserCreate(UserBase):
     address: Optional[str] = None
     service_type: Optional[str] = None
     base_price: Optional[Decimal] = None
+    image_url: Optional[str] = None
 
 class SendOTPRequest(BaseModel):
     email: EmailStr
@@ -44,6 +45,7 @@ class MerchantProfile(BaseModel):
     subscription_end: Optional[datetime]
     lat: float
     lng: float
+    image_url: Optional[str] = None
 
 class UserResponse(UserBase):
     id: UUID

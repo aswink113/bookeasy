@@ -358,6 +358,27 @@ export const apiService = {
   },
 
   /**
+   * Update Merchant Cover Photo
+   */
+  async updateMerchantPhoto(imageUrl) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/merchants/photo`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ image_url: imageUrl }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to update merchant cover photo');
+    }
+    return data;
+  },
+
+  /**
    * Submit 12-digit UPI UTR for Subscription or 14-day Free Trial Activation
    */
   async submitSubscriptionUTR(utrNumber, planCycle, amount, merchantUpiId) {

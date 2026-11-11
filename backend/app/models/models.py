@@ -33,6 +33,7 @@ class Merchant(Base):
     rating = Column(Float, default=0.0)
     is_subscribed = Column(Boolean, default=False)
     subscription_end = Column(DateTime, nullable=True)
+    image_url = Column(String, nullable=True)
     
     # Relationships
     user = relationship("User", back_populates="merchant_profile")

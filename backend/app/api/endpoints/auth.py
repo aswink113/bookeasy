@@ -98,7 +98,8 @@ async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
             service_type=user_in.service_type or "General",
             base_price=user_in.base_price or 0.0,
             latitude=lat,
-            longitude=lng
+            longitude=lng,
+            image_url=user_in.image_url
         )
         db.add(new_merchant)
     

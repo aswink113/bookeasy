@@ -552,7 +552,7 @@ export default function CustomerHome({ onNavigate }) {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '26px' }}>
               {filtered.map((merchant) => {
-                const coverImg = getServiceCover(merchant.service_type);
+                const coverImg = merchant.image_url || getServiceCover(merchant.service_type);
 
                 return (
                   <div
@@ -581,11 +581,12 @@ export default function CustomerHome({ onNavigate }) {
                       e.currentTarget.style.borderColor = theme.colors.borderLight;
                     }}
                   >
-                    {/* Visual Cover Header */}
-                    <div style={{ position: 'relative', height: '140px', width: '100%', overflow: 'hidden' }}>
+                    {/* Visual Cover Header - 16:9 Aspect Ratio Crisp Cover */}
+                    <div style={{ position: 'relative', height: '175px', width: '100%', overflow: 'hidden', backgroundColor: '#F1F5F9' }}>
                       <img
                         src={coverImg}
                         alt={merchant.shop_name}
+                        loading="lazy"
                         style={{
                           width: '100%',
                           height: '100%',
@@ -599,7 +600,7 @@ export default function CustomerHome({ onNavigate }) {
                         style={{
                           position: 'absolute',
                           inset: 0,
-                          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%)',
+                          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.55) 100%)',
                         }}
                       />
 

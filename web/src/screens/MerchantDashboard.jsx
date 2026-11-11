@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle, User, Zap, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle, User, Zap, ShieldCheck, Camera, Crop } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 import EditProfileModal from '../widgets/EditProfileModal';
 import MerchantSubscriptionModal from '../widgets/MerchantSubscriptionModal';
+import ImageCropModal from '../widgets/ImageCropModal';
 
 export default function MerchantDashboard({ onNavigate }) {
   const [requests, setRequests] = useState([]);
@@ -14,6 +15,11 @@ export default function MerchantDashboard({ onNavigate }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [tempCoverSrc, setTempCoverSrc] = useState(null);
+  const [coverPhoto, setCoverPhoto] = useState(null);
+  const [updatingPhoto, setUpdatingPhoto] = useState(false);
+  const photoInputRef = useRef(null);
   const user = apiService.getUser();
 
   const loadDashboardData = async () => {
@@ -125,6 +131,47 @@ export default function MerchantDashboard({ onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Change Shop Cover Photo with 16:9 Aspect Ratio Crop */}
+            <input
+              type="file"
+              ref={photoInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setTempCoverSrc(reader.result);
+                    setShowCropModal(true);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              disabled={updatingPhoto}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: theme.radii.md,
+                border: `1px solid ${theme.colors.borderLight}`,
+                backgroundColor: '#FFFFFF',
+                color: theme.colors.primaryNavy,
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                cursor: updatingPhoto ? 'not-allowed' : 'pointer',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+              }}
+            >
+              <Camera size={15} color={theme.colors.sunsetOrange} />
+              <span>{updatingPhoto ? 'Saving Photo...' : 'Update Cover (16:9)'}</span>
+            </button>
+
             {/* Subscription Status Pill */}
             {subscription.is_subscribed ? (
               <div
@@ -507,6 +554,26 @@ export default function MerchantDashboard({ onNavigate }) {
           setTimeout(() => setSuccessMsg(''), 5000);
           loadDashboardData();
         }}
+      />
+
+      {/* 16:9 Cover Photo Cropping Modal */}
+      <ImageCropModal
+        isOpen={showCropModal}
+        imageSrc={tempCoverSrc}
+        onClose={() => setShowCropModal(false)}
+        onCropComplete={async (croppedData) => {
+          setUpdatingPhoto(true);
+          try {
+            await apiService.updateMerchantPhoto(croppedData);
+            setSuccessMsg('Shop cover photo updated with 16:9 widescreen crop!');
+            setTimeout(() => setSuccessMsg(''), 5000);
+          } catch (err) {
+            alert(err.message || 'Failed to update cover photo');
+          } finally {
+            setUpdatingPhoto(false);
+          }
+        }}
+        aspectRatio={16 / 9}
       />
     </div>
   );

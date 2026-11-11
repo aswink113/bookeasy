@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   User, 
   Mail, 
@@ -13,11 +13,15 @@ import {
   Loader2, 
   KeyRound, 
   CheckCircle2, 
-  RefreshCw 
+  RefreshCw,
+  Camera,
+  Crop,
+  Sparkles
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 import TermsModal from '../widgets/TermsModal';
+import ImageCropModal from '../widgets/ImageCropModal';
 
 export default function SignupScreen({ onNavigate }) {
   const [role, setRole] = useState('customer'); // 'customer' | 'merchant'
@@ -38,6 +42,10 @@ export default function SignupScreen({ onNavigate }) {
   const [address, setAddress] = useState('');
   const [serviceType, setServiceType] = useState('Salon');
   const [basePrice, setBasePrice] = useState('');
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [tempImageForCrop, setTempImageForCrop] = useState(null);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -112,6 +120,7 @@ export default function SignupScreen({ onNavigate }) {
         address,
         serviceType,
         basePrice,
+        imageUrl: croppedImage,
       });
 
       // Auto login after signup
@@ -542,6 +551,124 @@ export default function SignupScreen({ onNavigate }) {
                   </div>
                 </div>
               </div>
+
+              {/* Shop Cover Picture with 16:9 Aspect Ratio Crop Option */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: theme.colors.textPrimary, marginBottom: '6px' }}>
+                  Shop Cover Photo (16:9 Ratio for Discovery Feed)
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setTempImageForCrop(reader.result);
+                        setShowCropModal(true);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+
+                {croppedImage ? (
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      aspectRatio: '16 / 9',
+                      borderRadius: theme.radii.md,
+                      overflow: 'hidden',
+                      border: '2px solid #FF7A00',
+                      boxShadow: '0 4px 14px rgba(255, 122, 0, 0.2)',
+                    }}
+                  >
+                    <img
+                      src={croppedImage}
+                      alt="Shop Cover Preview"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        display: 'flex',
+                        gap: '6px',
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                          backdropFilter: 'blur(4px)',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '6px 10px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <Crop size={13} /> Change / Re-crop
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      border: '2px dashed #CBD5E1',
+                      borderRadius: theme.radii.md,
+                      padding: '24px 16px',
+                      textAlign: 'center',
+                      backgroundColor: '#F8FAFC',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = theme.colors.sunsetOrange;
+                      e.currentTarget.style.backgroundColor = theme.colors.sunsetOrangeLight;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#CBD5E1';
+                      e.currentTarget.style.backgroundColor = '#F8FAFC';
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '8px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      }}
+                    >
+                      <Camera size={20} color={theme.colors.sunsetOrange} />
+                    </div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                      Upload & Crop Cover Photo
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: theme.colors.textMuted, marginTop: '2px' }}>
+                      PNG, JPG, WebP • Auto-crops to ultra-sharp 16:9 ratio
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -626,6 +753,17 @@ export default function SignupScreen({ onNavigate }) {
 
       {/* Terms & Conditions Modal */}
       <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
+
+      {/* Image Cropper Modal (16:9 Ratio) */}
+      <ImageCropModal
+        isOpen={showCropModal}
+        imageSrc={tempImageForCrop}
+        onClose={() => setShowCropModal(false)}
+        onCropComplete={(croppedData) => {
+          setCroppedImage(croppedData);
+        }}
+        aspectRatio={16 / 9}
+      />
     </div>
   );
 }
