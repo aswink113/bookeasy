@@ -25,9 +25,9 @@ export const theme = {
     accentBlueHover: '#0099EE',
 
     // Surfaces & Backgrounds
-    surfaceBg: '#F8FAFC',
+    surfaceBg: '#F3F4F6', // Modern cool gray off-white canvas for optimal contrast & depth
     surfaceWhite: '#FFFFFF',
-    surfaceMuted: '#F1F5F9',
+    surfaceMuted: '#E5E7EB',
     cardWhite: '#FFFFFF',
 
     // Borders & Dividers
@@ -47,8 +47,8 @@ export const theme = {
   },
   shadows: {
     sm: '0 1px 3px 0 rgba(15, 30, 54, 0.05)',
-    card: '0 10px 25px -5px rgba(15, 30, 54, 0.06), 0 8px 10px -6px rgba(15, 30, 54, 0.04)',
-    cardHover: '0 20px 30px -8px rgba(15, 30, 54, 0.12), 0 10px 15px -5px rgba(255, 122, 0, 0.1)',
+    card: '0 4px 16px -2px rgba(15, 30, 54, 0.08), 0 2px 4px -2px rgba(15, 30, 54, 0.04)',
+    cardHover: '0 20px 30px -8px rgba(15, 30, 54, 0.14), 0 8px 12px -4px rgba(255, 122, 0, 0.12)',
     orangeGlow: '0 10px 25px -3px rgba(255, 122, 0, 0.35)',
     tealGlow: '0 10px 25px -3px rgba(13, 148, 136, 0.35)',
     modal: '0 25px 50px -12px rgba(15, 30, 54, 0.35)',

@@ -209,8 +209,8 @@ export default function CustomerHome({ onNavigate }) {
     .sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', color: theme.colors.textPrimary }}>
-      {/* Top Premium Header */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#F3F4F6', color: theme.colors.textPrimary }}>
+      {/* Top Premium Header - Pure White Foreground */}
       <header
         style={{
           backgroundColor: '#FFFFFF',
@@ -219,7 +219,7 @@ export default function CustomerHome({ onNavigate }) {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.04)',
+          boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.05)',
         }}
       >
         <div
@@ -463,12 +463,12 @@ export default function CustomerHome({ onNavigate }) {
           </div>
         )}
 
-        {/* Global Search Bar */}
+        {/* Global Search Bar - Pure White Floating Container */}
         <div
           style={{
             position: 'relative',
             marginBottom: '22px',
-            boxShadow: '0 8px 24px -4px rgba(15, 30, 54, 0.08)',
+            boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.07)',
             borderRadius: theme.radii.full,
             backgroundColor: '#FFFFFF',
             border: `1px solid ${theme.colors.borderLight}`,
@@ -619,10 +619,10 @@ export default function CustomerHome({ onNavigate }) {
                     key={merchant.id}
                     onClick={() => setSelectedMerchantForDetail(merchant)}
                     style={{
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: '#FFFFFF', // Crisp Pure White Card
                       borderRadius: '20px',
-                      border: `1px solid ${theme.colors.borderLight}`,
-                      boxShadow: '0 4px 20px -2px rgba(15, 30, 54, 0.06)',
+                      border: '1px solid #E5E7EB',
+                      boxShadow: '0 4px 16px -2px rgba(15, 30, 54, 0.08), 0 2px 4px -2px rgba(15, 30, 54, 0.04)',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -633,13 +633,13 @@ export default function CustomerHome({ onNavigate }) {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-6px)';
-                      e.currentTarget.style.boxShadow = '0 20px 35px -5px rgba(15, 30, 54, 0.12)';
-                      e.currentTarget.style.borderColor = 'rgba(255, 122, 0, 0.35)';
+                      e.currentTarget.style.boxShadow = '0 20px 30px -8px rgba(15, 30, 54, 0.14), 0 8px 12px -4px rgba(255, 122, 0, 0.12)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 122, 0, 0.4)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 20px -2px rgba(15, 30, 54, 0.06)';
-                      e.currentTarget.style.borderColor = theme.colors.borderLight;
+                      e.currentTarget.style.boxShadow = '0 4px 16px -2px rgba(15, 30, 54, 0.08), 0 2px 4px -2px rgba(15, 30, 54, 0.04)';
+                      e.currentTarget.style.borderColor = '#E5E7EB';
                     }}
                   >
                     {/* Visual Cover Header - 16:9 Aspect Ratio Crisp Cover */}
