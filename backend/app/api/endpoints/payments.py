@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get("/upi-info", response_model=UPIPlanInfo)
 async def get_upi_subscription_info(current_user: User = Depends(get_current_user)):
     """
-    Get Bokivo Direct UPI VPA details and subscription tiers for merchant payment.
+    Get Bokivo Direct UPI VPA details, 14-day trial service charge (₹2), and subscription tiers.
     """
     if current_user.role != "merchant":
         raise HTTPException(status_code=403, detail="Only merchants can view subscription plans")
@@ -24,6 +24,7 @@ async def get_upi_subscription_info(current_user: User = Depends(get_current_use
     return UPIPlanInfo(
         upi_id=settings.UPI_ID,
         payee_name=settings.UPI_PAYEE_NAME,
+        trial_fee=settings.TRIAL_VERIFICATION_FEE,
         monthly_amount=settings.SUBSCRIPTION_MONTHLY_PRICE,
         quarterly_amount=settings.SUBSCRIPTION_QUARTERLY_PRICE,
         annual_amount=settings.SUBSCRIPTION_ANNUAL_PRICE
@@ -89,9 +90,31 @@ async def submit_upi_utr(
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant profile not found")
 
-    # Determine duration by plan cycle
+    # If trial or regular plan requires merchant UPI ID verification
     cycle = payload.plan_cycle.lower()
-    if cycle == "annual":
+    merchant_upi = (payload.merchant_upi_id or "").strip()
+    if cycle == "trial":
+        if not merchant_upi or "@" not in merchant_upi:
+            raise HTTPException(
+                status_code=400,
+                detail="A valid Merchant UPI ID (e.g., yourname@okhdfcbank / paytm) is required to set up the 14-day free trial."
+            )
+        # Check if merchant already used their 14-day free trial
+        q_past_trial = select(SubscriptionPayment).where(
+            SubscriptionPayment.merchant_id == current_user.id,
+            SubscriptionPayment.plan_name.ilike("%14-Day Free Trial%")
+        )
+        if (await db.execute(q_past_trial)).scalars().first():
+            raise HTTPException(
+                status_code=400,
+                detail="You have already redeemed your 14-day free trial. Please select a regular partner plan."
+            )
+
+    # Determine duration by plan cycle
+    if cycle == "trial":
+        days_to_add = 14
+        plan_title = f"Bokivo Partner 14-Day Free Trial (₹2 Fee - AutoPay Mandate: {merchant_upi})"
+    elif cycle == "annual":
         days_to_add = 365
         plan_title = "Bokivo Partner Premium (Annual)"
     elif cycle == "quarterly":

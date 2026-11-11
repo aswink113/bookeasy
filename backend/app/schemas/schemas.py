@@ -111,11 +111,13 @@ class PaymentVerify(BaseModel):
 class UPIPlanInfo(BaseModel):
     upi_id: str
     payee_name: str
+    trial_fee: float
     monthly_amount: float
     quarterly_amount: float
     annual_amount: float
 
 class SubmitUTRRequest(BaseModel):
     utr_number: str
-    plan_cycle: str # 'monthly', 'quarterly', 'annual'
+    merchant_upi_id: Optional[str] = None # Valid merchant UPI ID linked for auto-pay / mandate verification
+    plan_cycle: str # 'trial', 'monthly', 'quarterly', 'annual'
     amount: float

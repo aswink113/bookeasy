@@ -358,9 +358,9 @@ export const apiService = {
   },
 
   /**
-   * Submit 12-digit UPI UTR for Subscription Activation
+   * Submit 12-digit UPI UTR for Subscription or 14-day Free Trial Activation
    */
-  async submitSubscriptionUTR(utrNumber, planCycle, amount) {
+  async submitSubscriptionUTR(utrNumber, planCycle, amount, merchantUpiId) {
     const token = this.getToken();
     const res = await fetch(`${BASE_URL}/payments/submit-utr`, {
       method: 'POST',
@@ -372,6 +372,7 @@ export const apiService = {
         utr_number: utrNumber,
         plan_cycle: planCycle,
         amount: amount,
+        ...(merchantUpiId ? { merchant_upi_id: merchantUpiId } : {}),
       }),
     });
 

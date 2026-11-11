@@ -19,7 +19,8 @@ import { apiService } from '../services/apiService';
 
 export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribed }) {
   const [plans, setPlans] = useState(null);
-  const [selectedCycle, setSelectedCycle] = useState('monthly'); // 'monthly', 'quarterly', 'annual'
+  const [selectedCycle, setSelectedCycle] = useState('trial'); // 'trial', 'monthly', 'quarterly', 'annual'
+  const [merchantUpiId, setMerchantUpiId] = useState('');
   const [utrNumber, setUtrNumber] = useState('');
   const [loadingInfo, setLoadingInfo] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -33,6 +34,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
       setError('');
       setSuccessResult(null);
       setUtrNumber('');
+      setMerchantUpiId('');
     }
   }, [isOpen]);
 
@@ -51,6 +53,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
   if (!isOpen) return null;
 
   const currentPrice = 
+    selectedCycle === 'trial' ? (plans?.trial_fee || 2) :
     selectedCycle === 'annual' ? (plans?.annual_amount || 2699) :
     selectedCycle === 'quarterly' ? (plans?.quarterly_amount || 799) :
     (plans?.monthly_amount || 299);
@@ -59,7 +62,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
   const payeeName = plans?.payee_name || 'Bokivo Partner Network';
 
   // Standard NPCI UPI URI string format: upi://pay?pa=...&pn=...&am=...&cu=INR&tn=...
-  const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${currentPrice.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Bokivo Partner Subscription`)}`;
+  const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${currentPrice.toFixed(2)}&cu=INR&tn=${encodeURIComponent(selectedCycle === 'trial' ? 'Bokivo 14-Day Free Trial AutoPay Auth' : 'Bokivo Partner Subscription')}`;
 
   // Quick high-res QR code generator API using official standard
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(upiUri)}`;
@@ -74,6 +77,14 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
     e.preventDefault();
     setError('');
 
+    if (selectedCycle === 'trial') {
+      const cleanVpa = merchantUpiId.trim();
+      if (!cleanVpa || !cleanVpa.includes('@')) {
+        setError('Please enter a valid Merchant UPI ID (e.g. yourname@okhdfcbank or yourname@paytm) to verify ownership.');
+        return;
+      }
+    }
+
     const cleanUtr = utrNumber.trim();
     if (cleanUtr.length !== 12) {
       setError('UPI Reference (UTR) must be exactly 12 characters.');
@@ -82,7 +93,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
 
     setSubmitting(true);
     try {
-      const res = await apiService.submitSubscriptionUTR(cleanUtr, selectedCycle, currentPrice);
+      const res = await apiService.submitSubscriptionUTR(cleanUtr, selectedCycle, currentPrice, merchantUpiId.trim());
       setSuccessResult(res);
       if (onSubscribed) onSubscribed(res);
     } catch (err) {
@@ -271,11 +282,18 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
 
               {/* Step 1: Select Plan Tier */}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: theme.colors.primaryNavy, marginBottom: '10px' }}>
-                  1. Select Subscription Plan
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                    1. Select Plan or 14-Day Free Trial
+                  </label>
+                  <span style={{ fontSize: '0.72rem', color: '#16A34A', fontWeight: 800 }}>
+                    ✨ 14 Days Risk-Free Trial
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                   {[
+                    { id: 'trial', title: '14-Day Trial', price: plans?.trial_fee || 2, original: 299, period: '14 days free', badge: 'FREE TRIAL', highlight: true },
                     { id: 'monthly', title: 'Monthly', price: plans?.monthly_amount || 299, original: null, period: '/ month', badge: 'Standard' },
                     { id: 'quarterly', title: '3 Months', price: plans?.quarterly_amount || 799, original: 897, period: '/ quarter', badge: '11% OFF' },
                     { id: 'annual', title: 'Annual', price: plans?.annual_amount || 2699, original: 3588, period: '/ year', badge: '25% OFF' },
@@ -289,7 +307,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                           border: isSelected ? `2px solid ${theme.colors.sunsetOrange}` : `1px solid ${theme.colors.borderLight}`,
                           backgroundColor: isSelected ? '#FFF7ED' : '#FFFFFF',
                           borderRadius: theme.radii.lg,
-                          padding: '12px 10px',
+                          padding: '12px 8px',
                           cursor: 'pointer',
                           textAlign: 'center',
                           position: 'relative',
@@ -301,38 +319,44 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                             style={{
                               position: 'absolute',
                               top: '-8px',
-                              right: '8px',
-                              backgroundColor: p.id === 'annual' ? '#16A34A' : theme.colors.sunsetOrange,
+                              right: '4px',
+                              backgroundColor: p.id === 'trial' ? '#0284C7' : p.id === 'annual' ? '#16A34A' : theme.colors.sunsetOrange,
                               color: '#FFFFFF',
-                              fontSize: '0.65rem',
+                              fontSize: '0.6rem',
                               fontWeight: 800,
-                              padding: '2px 7px',
+                              padding: '2px 6px',
                               borderRadius: '999px',
                             }}
                           >
                             {p.badge}
                           </span>
                         )}
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: isSelected ? theme.colors.sunsetOrange : theme.colors.textSecondary }}>
+                        <div style={{ fontSize: '0.76rem', fontWeight: 800, color: isSelected ? theme.colors.sunsetOrange : theme.colors.textSecondary }}>
                           {p.title}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '3px' }}>
+                          <span style={{ fontSize: '1.15rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
                             ₹{p.price}
                           </span>
                           {p.original && (
-                            <span style={{ fontSize: '0.75rem', color: '#94A3B8', textDecoration: 'line-through' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#94A3B8', textDecoration: 'line-through' }}>
                               ₹{p.original}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.68rem', color: theme.colors.textMuted }}>
+                        <div style={{ fontSize: '0.64rem', color: theme.colors.textMuted }}>
                           {p.period}
                         </div>
                       </div>
                     );
                   })}
                 </div>
+                {selectedCycle === 'trial' && (
+                  <div style={{ marginTop: '8px', fontSize: '0.76rem', color: '#0369A1', backgroundColor: '#F0F9FF', padding: '8px 12px', borderRadius: '8px', border: '1px solid #BAE6FD', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={14} color="#0284C7" />
+                    <span><strong>14-Day Free Trial:</strong> Pay a one-time ₹2 token service charge to verify your merchant UPI ID. Zero commitment!</span>
+                  </div>
+                )}
               </div>
 
               {/* Step 2: UPI QR Code & Direct Scan Area */}
@@ -431,10 +455,40 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                 </a>
               </div>
 
-              {/* Step 3: Enter 12-digit UTR Reference */}
+              {/* Step 3: Enter Merchant UPI ID (for AutoPay mandate verification) & UTR */}
               <form onSubmit={handleSubmitUTR}>
+                {selectedCycle === 'trial' && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: theme.colors.primaryNavy, marginBottom: '6px' }}>
+                      3. Your Merchant UPI ID (For AutoPay Linking)
+                    </label>
+                    <input
+                      type="text"
+                      value={merchantUpiId}
+                      onChange={(e) => setMerchantUpiId(e.target.value)}
+                      placeholder="e.g. yourshop@okhdfcbank or merchant@paytm"
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: theme.radii.md,
+                        border: '1.5px solid #CBD5E1',
+                        fontSize: '0.92rem',
+                        fontWeight: 700,
+                        color: theme.colors.primaryNavy,
+                        backgroundColor: '#FFFFFF',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <span style={{ display: 'block', fontSize: '0.74rem', color: theme.colors.textMuted, marginTop: '4px' }}>
+                      Verified for the ₹2 authentication service charge. Your 14 days will be completely free!
+                    </span>
+                  </div>
+                )}
+
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: theme.colors.primaryNavy, marginBottom: '6px' }}>
-                  3. Enter 12-Digit UPI Reference (UTR)
+                  {selectedCycle === 'trial' ? '4. Enter 12-Digit UPI Reference (UTR) for ₹2 Charge' : '3. Enter 12-Digit UPI Reference (UTR)'}
                 </label>
                 <div style={{ position: 'relative', marginBottom: '8px' }}>
                   <input
@@ -483,7 +537,11 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                     boxShadow: theme.shadows.orangeGlow,
                   }}
                 >
-                  {submitting ? 'Verifying Reference...' : 'Verify UTR & Activate Subscription'}
+                  {submitting
+                    ? 'Verifying Reference...'
+                    : selectedCycle === 'trial'
+                    ? 'Verify ₹2 Charge & Activate 14-Day Free Trial'
+                    : 'Verify UTR & Activate Subscription'}
                 </button>
               </form>
             </div>
