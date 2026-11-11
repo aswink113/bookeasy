@@ -27,6 +27,7 @@ async def get_upi_subscription_info(current_user: User = Depends(get_current_use
         trial_fee=settings.TRIAL_VERIFICATION_FEE,
         monthly_amount=settings.SUBSCRIPTION_MONTHLY_PRICE,
         quarterly_amount=settings.SUBSCRIPTION_QUARTERLY_PRICE,
+        halfyearly_amount=settings.SUBSCRIPTION_HALFYEARLY_PRICE,
         annual_amount=settings.SUBSCRIPTION_ANNUAL_PRICE
     )
 
@@ -116,10 +117,13 @@ async def submit_upi_utr(
         plan_title = f"Bokivo Partner 14-Day Free Trial (₹2 Fee - AutoPay Mandate: {merchant_upi})"
     elif cycle == "annual":
         days_to_add = 365
-        plan_title = "Bokivo Partner Premium (Annual)"
+        plan_title = "Bokivo Partner Premium (Annual - 12 Months)"
+    elif cycle in ["halfyearly", "half-yearly", "6month", "6-months"]:
+        days_to_add = 180
+        plan_title = "Bokivo Partner Growth (Half-Yearly - 6 Months)"
     elif cycle == "quarterly":
         days_to_add = 90
-        plan_title = "Bokivo Partner Pro (Quarterly)"
+        plan_title = "Bokivo Partner Pro (Quarterly - 3 Months)"
     else:
         days_to_add = 30
         plan_title = "Bokivo Partner Starter (Monthly)"

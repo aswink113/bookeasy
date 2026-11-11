@@ -55,6 +55,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
   const currentPrice = 
     selectedCycle === 'trial' ? (plans?.trial_fee || 2) :
     selectedCycle === 'annual' ? (plans?.annual_amount || 2699) :
+    selectedCycle === 'halfyearly' ? (plans?.halfyearly_amount || 1499) :
     selectedCycle === 'quarterly' ? (plans?.quarterly_amount || 799) :
     (plans?.monthly_amount || 299);
 
@@ -291,11 +292,12 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
                   {[
                     { id: 'trial', title: '14-Day Trial', price: plans?.trial_fee || 2, original: 299, period: '14 days free', badge: 'FREE TRIAL', highlight: true },
                     { id: 'monthly', title: 'Monthly', price: plans?.monthly_amount || 299, original: null, period: '/ month', badge: 'Standard' },
                     { id: 'quarterly', title: '3 Months', price: plans?.quarterly_amount || 799, original: 897, period: '/ quarter', badge: '11% OFF' },
+                    { id: 'halfyearly', title: '6 Months', price: plans?.halfyearly_amount || 1499, original: 1794, period: '/ half-year', badge: '16% OFF' },
                     { id: 'annual', title: 'Annual', price: plans?.annual_amount || 2699, original: 3588, period: '/ year', badge: '25% OFF' },
                   ].map((p) => {
                     const isSelected = selectedCycle === p.id;
@@ -307,7 +309,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                           border: isSelected ? `2px solid ${theme.colors.sunsetOrange}` : `1px solid ${theme.colors.borderLight}`,
                           backgroundColor: isSelected ? '#FFF7ED' : '#FFFFFF',
                           borderRadius: theme.radii.lg,
-                          padding: '12px 8px',
+                          padding: '12px 6px',
                           cursor: 'pointer',
                           textAlign: 'center',
                           position: 'relative',
@@ -319,32 +321,32 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                             style={{
                               position: 'absolute',
                               top: '-8px',
-                              right: '4px',
+                              right: '2px',
                               backgroundColor: p.id === 'trial' ? '#0284C7' : p.id === 'annual' ? '#16A34A' : theme.colors.sunsetOrange,
                               color: '#FFFFFF',
-                              fontSize: '0.6rem',
+                              fontSize: '0.58rem',
                               fontWeight: 800,
-                              padding: '2px 6px',
+                              padding: '2px 5px',
                               borderRadius: '999px',
                             }}
                           >
                             {p.badge}
                           </span>
                         )}
-                        <div style={{ fontSize: '0.76rem', fontWeight: 800, color: isSelected ? theme.colors.sunsetOrange : theme.colors.textSecondary }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: isSelected ? theme.colors.sunsetOrange : theme.colors.textSecondary }}>
                           {p.title}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '3px' }}>
-                          <span style={{ fontSize: '1.15rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginTop: '3px' }}>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
                             ₹{p.price}
                           </span>
                           {p.original && (
-                            <span style={{ fontSize: '0.7rem', color: '#94A3B8', textDecoration: 'line-through' }}>
+                            <span style={{ fontSize: '0.66rem', color: '#94A3B8', textDecoration: 'line-through' }}>
                               ₹{p.original}
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.64rem', color: theme.colors.textMuted }}>
+                        <div style={{ fontSize: '0.62rem', color: theme.colors.textMuted }}>
                           {p.period}
                         </div>
                       </div>
