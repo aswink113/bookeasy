@@ -134,8 +134,8 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(15, 23, 42, 0.45)', // Lighter, clean backdrop
+        backdropFilter: 'blur(8px)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
@@ -147,28 +147,29 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
       <div
         style={{
           backgroundColor: '#FFFFFF',
-          borderRadius: theme.radii.xl,
+          borderRadius: '24px',
           maxWidth: '560px',
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+          boxShadow: '0 25px 60px -15px rgba(15, 30, 54, 0.2)',
+          border: '1px solid #E2E8F0',
           animation: 'fadeIn 0.2s ease-out',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header */}
+        {/* Top Header - Ultra Crisp Modern Light Theme */}
         <div
           style={{
-            padding: '20px 24px',
-            borderBottom: `1px solid ${theme.colors.borderLight}`,
+            padding: '22px 24px 18px',
+            borderBottom: `1px solid #F1F5F9`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            color: theme.colors.primaryNavy,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -177,7 +178,7 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                 type="button"
                 onClick={() => setStep('datetime')}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
+                  background: '#F1F5F9',
                   border: 'none',
                   borderRadius: '50%',
                   width: '32px',
@@ -186,7 +187,7 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  color: '#FFFFFF',
+                  color: theme.colors.primaryNavy,
                 }}
               >
                 <ArrowLeft size={16} />
@@ -194,11 +195,11 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
             )}
 
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
                 {step === 'datetime' ? 'Choose Date & Time' : 'Review & Confirm Booking'}
               </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: theme.colors.accentBlue }}>
-                {merchant.shop_name} • {merchant.service_type}
+              <p style={{ margin: '3px 0 0', fontSize: '0.84rem', color: theme.colors.sunsetOrange, fontWeight: 700 }}>
+                {merchant.shop_name} • <span style={{ color: theme.colors.tealAccent }}>{merchant.service_type}</span>
               </p>
             </div>
           </div>
@@ -206,8 +207,8 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
               borderRadius: '50%',
               width: '32px',
               height: '32px',
@@ -215,24 +216,34 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#FFFFFF',
+              color: '#64748B',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.color = theme.colors.primaryNavy;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+              e.currentTarget.style.color = '#64748B';
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Progress Tracker (Step 1 -> Step 2) */}
-        <div style={{ display: 'flex', borderBottom: `1px solid ${theme.colors.borderLight}`, backgroundColor: '#F8FAFC' }}>
+        <div style={{ display: 'flex', borderBottom: `1px solid #E2E8F0`, backgroundColor: '#F8FAFC' }}>
           <div
             style={{
               flex: 1,
-              padding: '10px 16px',
+              padding: '11px 16px',
               textAlign: 'center',
               fontSize: '0.82rem',
-              fontWeight: 700,
-              color: step === 'datetime' ? theme.colors.primaryNavy : theme.colors.textMuted,
-              borderBottom: step === 'datetime' ? `2px solid ${theme.colors.accentBlue}` : '2px solid transparent',
+              fontWeight: 800,
+              color: step === 'datetime' ? theme.colors.sunsetOrange : theme.colors.textMuted,
+              borderBottom: step === 'datetime' ? `2.5px solid ${theme.colors.sunsetOrange}` : '2.5px solid transparent',
+              transition: 'all 0.2s',
             }}
           >
             1. Select Slot
@@ -240,12 +251,13 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
           <div
             style={{
               flex: 1,
-              padding: '10px 16px',
+              padding: '11px 16px',
               textAlign: 'center',
               fontSize: '0.82rem',
-              fontWeight: 700,
-              color: step === 'confirm' ? theme.colors.primaryNavy : theme.colors.textMuted,
-              borderBottom: step === 'confirm' ? `2px solid ${theme.colors.accentBlue}` : '2px solid transparent',
+              fontWeight: 800,
+              color: step === 'confirm' ? theme.colors.sunsetOrange : theme.colors.textMuted,
+              borderBottom: step === 'confirm' ? `2.5px solid ${theme.colors.sunsetOrange}` : '2.5px solid transparent',
+              transition: 'all 0.2s',
             }}
           >
             2. Confirm Booking
@@ -441,16 +453,25 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                     padding: '12px',
                     borderRadius: theme.radii.md,
                     border: 'none',
-                    backgroundColor: theme.colors.primaryNavy,
+                    background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                     color: '#FFFFFF',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     fontSize: '0.95rem',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    boxShadow: theme.shadows.primaryNavy,
+                    boxShadow: '0 4px 14px rgba(255, 122, 0, 0.35)',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 122, 0, 0.45)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 122, 0, 0.35)';
                   }}
                 >
                   <span>Continue</span>
@@ -603,17 +624,28 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                     padding: '13px',
                     borderRadius: theme.radii.md,
                     border: 'none',
-                    backgroundColor: theme.colors.primaryNavy,
+                    background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                     color: '#FFFFFF',
                     fontWeight: 800,
                     fontSize: '0.98rem',
                     cursor: submitting ? 'not-allowed' : 'pointer',
-                    boxShadow: theme.shadows.primaryNavy,
+                    boxShadow: '0 4px 14px rgba(255, 122, 0, 0.35)',
                     opacity: submitting ? 0.7 : 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!submitting) {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 122, 0, 0.45)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 122, 0, 0.35)';
                   }}
                 >
                   <CheckCircle2 size={18} />
