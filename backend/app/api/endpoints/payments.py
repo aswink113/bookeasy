@@ -111,22 +111,25 @@ async def submit_upi_utr(
                 detail="You have already redeemed your 14-day free trial. Please select a regular partner plan."
             )
 
-    # Determine duration by plan cycle
+    # Determine duration and plan title
     if cycle == "trial":
         days_to_add = 14
-        plan_title = f"Bokivo Partner 14-Day Free Trial (₹2 Fee - AutoPay Mandate: {merchant_upi})"
-    elif cycle == "annual":
+        plan_title = f"Bokivo Base Tier - 14-Day Free Trial (₹2 Fee - AutoPay Mandate: {merchant_upi})"
+    elif cycle == "annual" or "premium" in cycle:
         days_to_add = 365
-        plan_title = "Bokivo Partner Premium (Annual - 12 Months)"
+        plan_title = "Bokivo Premium Plan (Annual - VIP Priority & Full Unlocked Suite)"
     elif cycle in ["halfyearly", "half-yearly", "6month", "6-months"]:
         days_to_add = 180
-        plan_title = "Bokivo Partner Growth (Half-Yearly - 6 Months)"
+        plan_title = "Bokivo Plus Plan (Half-Yearly - 6 Months)"
     elif cycle == "quarterly":
         days_to_add = 90
-        plan_title = "Bokivo Partner Pro (Quarterly - 3 Months)"
+        plan_title = "Bokivo Plus Plan (Quarterly - 3 Months)"
+    elif "plus" in cycle:
+        days_to_add = 90
+        plan_title = "Bokivo Plus Plan (Growth & Analytics)"
     else:
         days_to_add = 30
-        plan_title = "Bokivo Partner Starter (Monthly)"
+        plan_title = "Bokivo Base Plan (Monthly Starter)"
 
     # Calculate new expiry date
     now = datetime.utcnow()
