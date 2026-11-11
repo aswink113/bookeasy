@@ -47,6 +47,12 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
         }
       ];
 
+  // Calculate lowest and highest prices from sub-services
+  const allPrices = subServices.map((s) => Number(s.price)).filter((p) => !isNaN(p) && p > 0);
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : Number(merchant.base_price) || 299;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : Number(merchant.base_price) || 299;
+  const priceRangeLabel = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
+
   const handleBookNow = (service) => {
     if (onBookSubService) {
       onBookSubService(merchant, service || selectedSubService || subServices[0]);
@@ -268,23 +274,34 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
             </div>
           )}
 
-          {/* Address & Meta */}
+          {/* Address & Price Range Meta */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              justifyContent: 'space-between',
               margin: '18px 0 24px',
-              padding: '12px 16px',
+              padding: '12px 18px',
               backgroundColor: '#F8FAFC',
-              borderRadius: '14px',
+              borderRadius: '16px',
               border: '1px solid #E2E8F0',
-              fontSize: '0.88rem',
-              color: theme.colors.textSecondary,
+              gap: '14px',
+              flexWrap: 'wrap',
             }}
           >
-            <MapPin size={16} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
-            <span style={{ fontWeight: 600 }}>{merchant.address}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', color: theme.colors.textSecondary }}>
+              <MapPin size={16} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
+              <span style={{ fontWeight: 600 }}>{merchant.address}</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.colors.textMuted, textTransform: 'uppercase' }}>
+                Price Range:
+              </span>
+              <span style={{ fontSize: '1rem', fontWeight: 900, color: theme.colors.sunsetOrange }}>
+                {priceRangeLabel}
+              </span>
+            </div>
           </div>
 
           {/* Sub-Categories & Services Breakdown */}
@@ -455,3 +472,4 @@ export default function MerchantDetailModal({ merchant, isOpen, onClose, onBookS
     </div>
   );
 }
+

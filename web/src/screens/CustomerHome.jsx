@@ -77,6 +77,33 @@ function getCategoryIcon(serviceType, size = 12) {
   return <Sparkles size={size} color="#FF7A00" />;
 }
 
+/**
+ * Calculates lowest and highest prices from sub-categories
+ */
+function getPriceRange(merchant) {
+  const subServices = Array.isArray(merchant.sub_services) && merchant.sub_services.length > 0
+    ? merchant.sub_services
+    : null;
+
+  if (subServices) {
+    const prices = subServices
+      .map((s) => Number(s.price))
+      .filter((p) => !isNaN(p) && p > 0);
+
+    if (prices.length > 0) {
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      if (min === max) {
+        return { display: `₹${min}`, isRange: false, min, max };
+      }
+      return { display: `₹${min} - ₹${max}`, isRange: true, min, max };
+    }
+  }
+
+  const base = Number(merchant.base_price) || 299;
+  return { display: `₹${base}`, isRange: false, min: base, max: base };
+}
+
 // Category-specific cover image gradients & photos for luxury card visuals
 const SERVICE_COVERS = {
   salon: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80',
@@ -585,6 +612,7 @@ export default function CustomerHome({ onNavigate }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '26px' }}>
               {filtered.map((merchant) => {
                 const coverImg = merchant.image_url || getServiceCover(merchant.service_type);
+                const priceInfo = getPriceRange(merchant);
 
                 return (
                   <div
@@ -751,10 +779,10 @@ export default function CustomerHome({ onNavigate }) {
                       >
                         <div>
                           <div style={{ fontSize: '0.68rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
-                            Starting Price
+                            {priceInfo.isRange ? 'Price Range' : 'Starting Price'}
                           </div>
-                          <div style={{ fontSize: '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
-                            ₹{merchant.base_price || 299}
+                          <div style={{ fontSize: priceInfo.isRange ? '1.2rem' : '1.45rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
+                            {priceInfo.display}
                           </div>
                         </div>
 
