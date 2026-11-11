@@ -9,16 +9,19 @@ import {
   Clock3, 
   XCircle, 
   Store,
-  RefreshCw
+  RefreshCw,
+  Star
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
+import ReviewModal from './ReviewModal';
 
 export default function CustomerBookingsModal({ onClose }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionMsg, setActionMsg] = useState('');
+  const [reviewingBooking, setReviewingBooking] = useState(null);
 
   useEffect(() => {
     loadBookings();
@@ -46,6 +49,17 @@ export default function CustomerBookingsModal({ onClose }) {
       loadBookings();
     } catch (err) {
       alert(err.message || 'Failed to cancel booking');
+    }
+  };
+
+  const handleReviewSubmit = async ({ bookingId, rating, comment }) => {
+    try {
+      await apiService.submitReview({ bookingId, rating, comment });
+      setActionMsg('Thank you! Your 5-star review and rating have been recorded.');
+      setTimeout(() => setActionMsg(''), 4000);
+      await loadBookings();
+    } catch (err) {
+      throw err;
     }
   };
 
@@ -347,23 +361,87 @@ export default function CustomerBookingsModal({ onClose }) {
                         </span>
                       </div>
 
-                      {canCancel && (
-                        <button
-                          onClick={() => handleCancel(b.id)}
-                          style={{
-                            border: `1px solid #FCA5A5`,
-                            backgroundColor: '#FEF2F2',
-                            color: '#DC2626',
-                            padding: '4px 12px',
-                            borderRadius: theme.radii.sm,
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Cancel Booking
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {/* Rating & Review Button: Show after booking time or completed, and hasn't reviewed yet */}
+                        {(() => {
+                          const isPast = new Date(b.booking_date).getTime() <= Date.now() || b.status === 'completed';
+                          const isEligibleForReview = isPast && b.status !== 'cancelled' && b.status !== 'declined';
+                          
+                          if (b.has_reviewed) {
+                            return (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  backgroundColor: '#FEF3C7',
+                                  color: '#B45309',
+                                  padding: '5px 12px',
+                                  borderRadius: '20px',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  border: '1px solid #FDE68A',
+                                }}
+                              >
+                                <Star size={13} fill="#F59E0B" color="#F59E0B" /> Reviewed
+                              </span>
+                            );
+                          }
+
+                          if (isEligibleForReview) {
+                            return (
+                              <button
+                                onClick={() => setReviewingBooking(b)}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF9E44 100%)',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  padding: '6px 14px',
+                                  borderRadius: '20px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  boxShadow: '0 2px 8px rgba(255, 122, 0, 0.35)',
+                                  transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'translateY(-1px)';
+                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 122, 0, 0.45)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'translateY(0)';
+                                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 122, 0, 0.35)';
+                                }}
+                              >
+                                <Star size={13} fill="#FFFFFF" color="#FFFFFF" /> Rate & Review (5★)
+                              </button>
+                            );
+                          }
+
+                          return null;
+                        })()}
+
+                        {canCancel && (
+                          <button
+                            onClick={() => handleCancel(b.id)}
+                            style={{
+                              border: `1px solid #FCA5A5`,
+                              backgroundColor: '#FEF2F2',
+                              color: '#DC2626',
+                              padding: '5px 12px',
+                              borderRadius: theme.radii.sm,
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Cancel Booking
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -372,6 +450,14 @@ export default function CustomerBookingsModal({ onClose }) {
           )}
         </div>
       </div>
+
+      {/* Review & Rating Modal */}
+      <ReviewModal
+        booking={reviewingBooking}
+        isOpen={Boolean(reviewingBooking)}
+        onClose={() => setReviewingBooking(null)}
+        onReviewSubmitted={handleReviewSubmit}
+      />
     </div>
   );
 }

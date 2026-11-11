@@ -76,11 +76,29 @@ class BookingResponse(BaseModel):
     merchant_id: UUID
     status: str
     booking_date: datetime
+    has_reviewed: Optional[bool] = False
     created_at: datetime
     shop_name: Optional[str] = None
     service_type: Optional[str] = None
     address: Optional[str] = None
     base_price: Optional[Decimal] = None
+    image_url: Optional[str] = None
+
+class CreateReviewRequest(BaseModel):
+    booking_id: UUID
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = None
+
+class ReviewResponse(BaseModel):
+    id: UUID
+    booking_id: UUID
+    merchant_id: UUID
+    rating: float
+    comment: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
     class Config:
         from_attributes = True

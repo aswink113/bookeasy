@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database import get_db
-from app.models.models import Booking, User, Merchant
-from app.schemas.schemas import BookingCreate, BookingResponse, BookingUpdate
+from app.models.models import Booking, User, Merchant, Review
+from app.schemas.schemas import BookingCreate, BookingResponse, BookingUpdate, CreateReviewRequest, ReviewResponse
+from sqlalchemy import func
 from app.utils.fcm import send_push_notification
 from app.utils.email_otp import send_booking_confirmation_email, send_booking_cancellation_email
 from typing import List
@@ -135,11 +136,13 @@ async def create_booking(booking_in: BookingCreate, current_user: User = Depends
         merchant_id=new_booking.merchant_id,
         status=new_booking.status,
         booking_date=new_booking.booking_date,
+        has_reviewed=False,
         created_at=new_booking.created_at,
         shop_name=m.shop_name if m else None,
         service_type=m.service_type if m else None,
         address=m.address if m else None,
         base_price=m.base_price if m else None,
+        image_url=m.image_url if m else None,
     )
 
 @router.get("/customer", response_model=List[BookingResponse])
@@ -156,11 +159,13 @@ async def get_customer_bookings(current_user: User = Depends(get_current_user), 
             merchant_id=booking.merchant_id,
             status=booking.status,
             booking_date=booking.booking_date,
+            has_reviewed=getattr(booking, 'has_reviewed', False),
             created_at=booking.created_at,
             shop_name=merchant.shop_name if merchant else "Service Partner",
             service_type=merchant.service_type if merchant else "Service",
             address=merchant.address if merchant else "",
             base_price=merchant.base_price if merchant else None,
+            image_url=merchant.image_url if merchant else None,
         ))
     return responses
 
@@ -287,3 +292,52 @@ async def update_booking_status(booking_id: UUID, status_update: BookingUpdate, 
         
     await db.commit()
     return booking
+
+@router.post("/review", response_model=ReviewResponse)
+async def submit_booking_review(
+    payload: CreateReviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Submit 5-star rating & review for a completed/past booking.
+    Updates the merchant's aggregate rating in real-time.
+    """
+    # Verify booking belongs to this customer
+    q = select(Booking).where(Booking.id == payload.booking_id, Booking.customer_id == current_user.id)
+    result = await db.execute(q)
+    booking = result.scalars().first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found for this user")
+
+    # Check if already reviewed
+    existing_rev = await db.execute(select(Review).where(Review.booking_id == payload.booking_id))
+    if existing_rev.scalars().first():
+        raise HTTPException(status_code=400, detail="You have already reviewed this booking")
+
+    # Create new review
+    new_review = Review(
+        booking_id=booking.id,
+        customer_id=current_user.id,
+        merchant_id=booking.merchant_id,
+        rating=float(payload.rating),
+        comment=payload.comment.strip() if payload.comment else None
+    )
+    db.add(new_review)
+    booking.has_reviewed = True
+
+    # Recalculate merchant's live aggregate rating
+    avg_query = select(func.avg(Review.rating)).where(Review.merchant_id == booking.merchant_id)
+    # We flush so new_review is included in DB aggregation
+    await db.flush()
+    avg_rating = await db.scalar(avg_query)
+    if avg_rating:
+        m_q = select(Merchant).where(Merchant.id == booking.merchant_id)
+        m_res = await db.execute(m_q)
+        merchant = m_res.scalars().first()
+        if merchant:
+            merchant.rating = round(float(avg_rating), 1)
+
+    await db.commit()
+    await db.refresh(new_review)
+    return new_review

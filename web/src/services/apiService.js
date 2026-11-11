@@ -379,6 +379,31 @@ export const apiService = {
   },
 
   /**
+   * Submit 5-Star Rating & Review for a completed/past booking
+   */
+  async submitReview({ bookingId, rating, comment }) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/bookings/review`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        rating,
+        comment: comment?.trim() || '',
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to submit review');
+    }
+    return data;
+  },
+
+  /**
    * Submit 12-digit UPI UTR for Subscription or 14-day Free Trial Activation
    */
   async submitSubscriptionUTR(utrNumber, planCycle, amount, merchantUpiId) {

@@ -63,8 +63,25 @@ class Booking(Base):
     merchant_id = Column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False)
     status = Column(String, default="pending") # 'pending', 'accepted', 'declined', 'completed'
     booking_date = Column(DateTime, nullable=False)
+    has_reviewed = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     # Relationships
     customer = relationship("User", back_populates="customer_bookings", foreign_keys=[customer_id])
     merchant = relationship("Merchant", back_populates="bookings", foreign_keys=[merchant_id])
+    review = relationship("Review", back_populates="booking", uselist=False)
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id"), nullable=False, unique=True)
+    customer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    merchant_id = Column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False)
+    rating = Column(Float, nullable=False) # 1.0 to 5.0
+    comment = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    booking = relationship("Booking", back_populates="review")
+    merchant = relationship("Merchant", foreign_keys=[merchant_id])
+    customer = relationship("User", foreign_keys=[customer_id])
