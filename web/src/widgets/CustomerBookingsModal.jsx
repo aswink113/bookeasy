@@ -101,22 +101,36 @@ export default function CustomerBookingsModal({ onClose }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header - Ultra Crisp Light Theme */}
         <div
           style={{
-            padding: '18px 24px',
+            padding: '20px 24px',
             borderBottom: `1px solid ${theme.colors.borderLight}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            color: theme.colors.primaryNavy,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Calendar size={22} color={theme.colors.accentBlue} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                backgroundColor: theme.colors.sunsetOrangeLight,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Calendar size={20} color={theme.colors.sunsetOrange} />
+            </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>My Appointments & Bookings</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                My Appointments & Bookings
+              </h3>
               <span style={{ fontSize: '0.8rem', color: theme.colors.textMuted }}>
                 Track status and manage your scheduled services
               </span>
@@ -127,16 +141,25 @@ export default function CustomerBookingsModal({ onClose }) {
               onClick={loadBookings}
               title="Refresh"
               style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
+                background: '#F8FAFC',
+                border: `1px solid ${theme.colors.borderLight}`,
                 borderRadius: '50%',
-                width: '32px',
-                height: '32px',
+                width: '34px',
+                height: '34px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                color: '#FFFFFF',
+                color: theme.colors.textSecondary,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F1F5F9';
+                e.currentTarget.style.color = theme.colors.primaryNavy;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#F8FAFC';
+                e.currentTarget.style.color = theme.colors.textSecondary;
               }}
             >
               <RefreshCw size={15} />
@@ -144,19 +167,28 @@ export default function CustomerBookingsModal({ onClose }) {
             <button
               onClick={onClose}
               style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
+                background: '#F8FAFC',
+                border: `1px solid ${theme.colors.borderLight}`,
                 borderRadius: '50%',
-                width: '32px',
-                height: '32px',
+                width: '34px',
+                height: '34px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                color: '#FFFFFF',
+                color: theme.colors.textSecondary,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#F1F5F9';
+                e.currentTarget.style.color = theme.colors.primaryNavy;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#F8FAFC';
+                e.currentTarget.style.color = theme.colors.textSecondary;
               }}
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
         </div>

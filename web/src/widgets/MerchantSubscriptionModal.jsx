@@ -241,12 +241,13 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glass Header with Bokivo Geometry */}
+        {/* Header - Ultra Crisp Light Theme */}
         <div
           style={{
             padding: '24px 28px',
-            background: 'linear-gradient(135deg, #0F1E36 0%, #1E3A5F 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            borderBottom: `1px solid ${theme.colors.borderLight}`,
+            color: theme.colors.primaryNavy,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -254,20 +255,6 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
             overflow: 'hidden',
           }}
         >
-          {/* Subtle Ambient Glow */}
-          <div
-            style={{
-              position: 'absolute',
-              right: '-40px',
-              top: '-40px',
-              width: '160px',
-              height: '160px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255, 122, 0, 0.3) 0%, transparent 70%)',
-              pointerEvents: 'none',
-            }}
-          />
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 2 }}>
             <div
               style={{
@@ -285,12 +272,14 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 900, letterSpacing: '-0.3px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 900, letterSpacing: '-0.3px', color: theme.colors.primaryNavy }}>
                   Bokivo Partner Tier Plans
                 </h3>
                 <span
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    backgroundColor: theme.colors.sunsetOrangeLight,
+                    color: theme.colors.sunsetOrange,
+                    border: '1px solid #FED7AA',
                     padding: '2px 8px',
                     borderRadius: '999px',
                     fontSize: '0.72rem',
@@ -300,7 +289,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                   0% Fee UPI Gateway
                 </span>
               </div>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8' }}>
+              <span style={{ fontSize: '0.82rem', color: theme.colors.textMuted }}>
                 Select your preferred tier (Base, Plus, Premium or 14-Day Free Trial)
               </span>
             </div>
@@ -309,8 +298,8 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
+              background: '#F8FAFC',
+              border: `1px solid ${theme.colors.borderLight}`,
               borderRadius: '50%',
               width: '34px',
               height: '34px',
@@ -318,14 +307,20 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#FFFFFF',
+              color: theme.colors.textSecondary,
               zIndex: 2,
-              transition: 'background-color 0.15s',
+              transition: 'all 0.15s',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.color = theme.colors.primaryNavy;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+              e.currentTarget.style.color = theme.colors.textSecondary;
+            }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
@@ -385,7 +380,7 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
               <button
                 onClick={onClose}
                 style={{
-                  background: 'linear-gradient(135deg, #1E3A5F 0%, #0F1E36 100%)',
+                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: theme.radii.md,
@@ -393,7 +388,16 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                   fontWeight: 800,
                   fontSize: '0.95rem',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(15, 30, 54, 0.2)',
+                  boxShadow: '0 4px 14px rgba(255, 122, 0, 0.35)',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 122, 0, 0.45)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 122, 0, 0.35)';
                 }}
               >
                 Go to Merchant Studio

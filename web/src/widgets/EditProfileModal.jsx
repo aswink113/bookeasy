@@ -121,24 +121,25 @@ export default function EditProfileModal({ isOpen, onClose, onProfileUpdated }) 
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Header - Ultra Crisp Light Theme */}
         <div
           style={{
             padding: '20px 24px',
-            background: 'linear-gradient(135deg, #0F1E36 0%, #1E3A5F 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            borderBottom: `1px solid ${theme.colors.borderLight}`,
+            color: theme.colors.primaryNavy,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(255, 122, 0, 0.2)',
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                backgroundColor: theme.colors.sunsetOrangeLight,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -147,16 +148,16 @@ export default function EditProfileModal({ isOpen, onClose, onProfileUpdated }) 
               <User size={20} color={theme.colors.sunsetOrange} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>My Profile Settings</h3>
-              <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Update username & verified email</span>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: theme.colors.primaryNavy }}>My Profile Settings</h3>
+              <span style={{ fontSize: '0.78rem', color: theme.colors.textMuted }}>Update username & verified email</span>
             </div>
           </div>
 
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
+              background: '#F8FAFC',
+              border: `1px solid ${theme.colors.borderLight}`,
               borderRadius: '50%',
               width: '32px',
               height: '32px',
@@ -164,10 +165,19 @@ export default function EditProfileModal({ isOpen, onClose, onProfileUpdated }) 
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#FFFFFF',
+              color: theme.colors.textSecondary,
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.color = theme.colors.primaryNavy;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+              e.currentTarget.style.color = theme.colors.textSecondary;
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
@@ -389,7 +399,7 @@ export default function EditProfileModal({ isOpen, onClose, onProfileUpdated }) 
                 padding: '12px',
                 borderRadius: theme.radii.md,
                 border: 'none',
-                background: 'linear-gradient(135deg, #1E3A5F 0%, #0F1E36 100%)',
+                background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                 color: '#FFFFFF',
                 fontWeight: 800,
                 fontSize: '0.9rem',
@@ -398,7 +408,18 @@ export default function EditProfileModal({ isOpen, onClose, onProfileUpdated }) 
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(15, 30, 54, 0.2)',
+                boxShadow: '0 4px 14px rgba(255, 122, 0, 0.35)',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!saving) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 122, 0, 0.45)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 122, 0, 0.35)';
               }}
             >
               {saving ? 'Saving...' : 'Save Profile Changes'}

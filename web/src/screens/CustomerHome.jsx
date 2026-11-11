@@ -444,7 +444,7 @@ export default function CustomerHome({ onNavigate }) {
               position: 'absolute',
               right: '8px',
               top: '7px',
-              background: 'linear-gradient(135deg, #1E3A5F 0%, #0F1E36 100%)',
+              background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
               color: '#FFFFFF',
               border: 'none',
               borderRadius: theme.radii.full,
@@ -453,15 +453,21 @@ export default function CustomerHome({ onNavigate }) {
               alignItems: 'center',
               gap: '6px',
               fontSize: '0.85rem',
-              fontWeight: 700,
+              fontWeight: 800,
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(15, 30, 54, 0.2)',
-              transition: 'transform 0.15s',
+              boxShadow: '0 4px 14px rgba(255, 122, 0, 0.35)',
+              transition: 'all 0.15s',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 122, 0, 0.45)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(255, 122, 0, 0.35)';
+            }}
           >
-            <Compass size={16} color={theme.colors.sunsetOrange} /> Change City
+            <Compass size={16} color="#FFFFFF" /> Change City
           </button>
         </div>
 

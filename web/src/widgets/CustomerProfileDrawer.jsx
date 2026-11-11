@@ -50,12 +50,13 @@ export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drawer Header */}
+        {/* Drawer Header - Light Theme */}
         <div
           style={{
             padding: '24px 20px',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            borderBottom: `1px solid ${theme.colors.borderLight}`,
+            color: theme.colors.primaryNavy,
             position: 'relative',
           }}
         >
@@ -65,8 +66,8 @@ export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings,
               position: 'absolute',
               top: '16px',
               right: '16px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
+              background: '#F8FAFC',
+              border: `1px solid ${theme.colors.borderLight}`,
               borderRadius: '50%',
               width: '32px',
               height: '32px',
@@ -74,10 +75,19 @@ export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings,
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#FFFFFF',
+              color: theme.colors.textSecondary,
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#F1F5F9';
+              e.currentTarget.style.color = theme.colors.primaryNavy;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+              e.currentTarget.style.color = theme.colors.textSecondary;
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -86,29 +96,31 @@ export default function CustomerProfileDrawer({ isOpen, onClose, onOpenBookings,
                 width: '56px',
                 height: '56px',
                 borderRadius: '50%',
-                backgroundColor: theme.colors.accentBlue,
-                color: theme.colors.primaryNavy,
+                background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
+                color: '#FFFFFF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 900,
                 fontSize: '1.4rem',
+                boxShadow: '0 4px 14px rgba(255, 122, 0, 0.3)',
               }}
             >
               {(user.name || 'U').charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
                 {user.name || 'Valued Customer'}
               </h3>
-              <span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Customer Account</span>
+              <span style={{ fontSize: '0.8rem', color: theme.colors.textMuted }}>Customer Account</span>
               <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                  color: '#34D399',
+                  backgroundColor: '#ECFDF5',
+                  color: '#059669',
+                  border: '1px solid #A7F3D0',
                   padding: '2px 8px',
                   borderRadius: '10px',
                   fontSize: '0.7rem',

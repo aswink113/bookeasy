@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Store,
@@ -50,37 +50,38 @@ export default function AdminDashboard({ onNavigate }) {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0A0F1D', color: '#F8FAFC' }}>
-      {/* Admin Sidebar */}
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC', color: theme.colors.primaryNavy }}>
+      {/* Admin Sidebar - Clean Light Theme */}
       <aside
         style={{
           width: '260px',
-          backgroundColor: '#0F172A',
-          borderRight: '1px solid #1E293B',
+          backgroundColor: '#FFFFFF',
+          borderRight: `1px solid ${theme.colors.borderLight}`,
           display: 'flex',
           flexDirection: 'column',
           padding: '24px 16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px 24px 8px', borderBottom: '1px solid #1E293B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px 24px 8px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
           <div
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              backgroundColor: '#10B981',
+              width: '38px',
+              height: '38px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 900,
-              color: '#0A0F1D',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 12px rgba(255, 122, 0, 0.35)',
             }}
           >
             B
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#F8FAFC' }}>Bokivo Intel</h3>
-            <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Corporate Admin</span>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: theme.colors.primaryNavy }}>Bokivo Intel</h3>
+            <span style={{ fontSize: '0.75rem', color: theme.colors.textMuted }}>Corporate Admin</span>
           </div>
         </div>
 
@@ -105,23 +106,23 @@ export default function AdminDashboard({ onNavigate }) {
                   padding: '12px 14px',
                   borderRadius: theme.radii.md,
                   border: 'none',
-                  backgroundColor: active ? '#1E293B' : 'transparent',
-                  color: active ? '#10B981' : '#94A3B8',
+                  backgroundColor: active ? theme.colors.sunsetOrangeLight : 'transparent',
+                  color: active ? theme.colors.sunsetOrange : theme.colors.textSecondary,
                   fontSize: '0.9rem',
-                  fontWeight: active ? 700 : 500,
+                  fontWeight: active ? 800 : 600,
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s',
                 }}
               >
-                <Icon size={18} color={active ? '#10B981' : '#94A3B8'} />
+                <Icon size={18} color={active ? theme.colors.sunsetOrange : theme.colors.textSecondary} />
                 {item.label}
               </button>
             );
           })}
         </nav>
 
-        <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid #1E293B' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: `1px solid ${theme.colors.borderLight}` }}>
           <button
             onClick={() => onNavigate('customer-home')}
             style={{
@@ -130,15 +131,18 @@ export default function AdminDashboard({ onNavigate }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              padding: '10px 14px',
+              padding: '11px 14px',
               borderRadius: theme.radii.md,
-              backgroundColor: '#1E293B',
-              border: 'none',
-              color: '#F8FAFC',
+              backgroundColor: '#F1F5F9',
+              border: `1px solid ${theme.colors.borderLight}`,
+              color: theme.colors.primaryNavy,
               fontSize: '0.85rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer',
+              transition: 'background-color 0.15s',
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E2E8F0')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F1F5F9')}
           >
             <ArrowLeft size={16} /> Back to Web App
           </button>
@@ -150,20 +154,20 @@ export default function AdminDashboard({ onNavigate }) {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800 }}>
+            <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
               {activeTab === 'overview' && 'Corporate Command Center'}
               {activeTab === 'merchants' && 'Merchant Partner Fleet'}
               {activeTab === 'users' && 'Customer Directory'}
               {activeTab === 'bookings' && 'Booking Audit Ledger'}
               {activeTab === 'revenue' && 'Platform Revenue Analytics'}
             </h1>
-            <p style={{ margin: '4px 0 0 0', color: '#94A3B8', fontSize: '0.9rem' }}>
+            <p style={{ margin: '4px 0 0 0', color: theme.colors.textMuted, fontSize: '0.9rem' }}>
               System operational. PostgreSQL + PostGIS cluster active.
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '0.85rem', color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '6px 14px', borderRadius: '9999px', fontWeight: 700 }}>
+            <span style={{ fontSize: '0.85rem', color: '#059669', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', padding: '6px 14px', borderRadius: '9999px', fontWeight: 800 }}>
               ● Live Metrics
             </span>
           </div>
@@ -171,21 +175,21 @@ export default function AdminDashboard({ onNavigate }) {
 
         {/* Stats Row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-          <div style={{ backgroundColor: '#0F172A', padding: '20px', borderRadius: theme.radii.xl, border: '1px solid #1E293B' }}>
-            <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>Active Users</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '8px', color: '#F8FAFC' }}>{stats.users}</div>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: 700 }}>Active Users</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '8px', color: theme.colors.primaryNavy }}>{stats.users}</div>
           </div>
-          <div style={{ backgroundColor: '#0F172A', padding: '20px', borderRadius: theme.radii.xl, border: '1px solid #1E293B' }}>
-            <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>Merchants</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '8px', color: '#38B6FF' }}>{stats.merchants}</div>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: 700 }}>Merchants</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '8px', color: theme.colors.tealAccent }}>{stats.merchants}</div>
           </div>
-          <div style={{ backgroundColor: '#0F172A', padding: '20px', borderRadius: theme.radii.xl, border: '1px solid #1E293B' }}>
-            <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>Total Bookings</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '8px', color: '#F59E0B' }}>{stats.bookings}</div>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: 700 }}>Total Bookings</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '8px', color: theme.colors.sunsetOrange }}>{stats.bookings}</div>
           </div>
-          <div style={{ backgroundColor: '#0F172A', padding: '20px', borderRadius: theme.radii.xl, border: '1px solid #1E293B' }}>
-            <div style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 600 }}>MRR Subscription Revenue</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '8px', color: '#10B981' }}>₹{stats.revenue.toLocaleString()}</div>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: 700 }}>MRR Subscription Revenue</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '8px', color: '#059669' }}>₹{stats.revenue.toLocaleString()}</div>
           </div>
         </div>
 
@@ -193,18 +197,18 @@ export default function AdminDashboard({ onNavigate }) {
         {activeTab === 'overview' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             {/* Top Performing Merchants */}
-            <div style={{ backgroundColor: '#0F172A', borderRadius: theme.radii.xl, border: '1px solid #1E293B', padding: '24px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 700 }}>Top Rated Merchants</h3>
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, padding: '24px', boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 800, color: theme.colors.primaryNavy }}>Top Rated Merchants</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {merchants.slice(0, 4).map((m) => (
-                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #1E293B' }}>
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
                     <div>
-                      <div style={{ fontWeight: 700 }}>{m.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>{m.category}</div>
+                      <div style={{ fontWeight: 800, color: theme.colors.primaryNavy }}>{m.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted }}>{m.category}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Star size={14} fill="#F59E0B" color="#F59E0B" />
-                      <span style={{ fontWeight: 700 }}>{m.rating}</span>
+                      <span style={{ fontWeight: 800, color: theme.colors.primaryNavy }}>{m.rating}</span>
                     </div>
                   </div>
                 ))}
@@ -212,18 +216,18 @@ export default function AdminDashboard({ onNavigate }) {
             </div>
 
             {/* Recent Bookings Queue */}
-            <div style={{ backgroundColor: '#0F172A', borderRadius: theme.radii.xl, border: '1px solid #1E293B', padding: '24px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 700 }}>Live Transaction Ledger</h3>
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, padding: '24px', boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '1.1rem', fontWeight: 800, color: theme.colors.primaryNavy }}>Live Transaction Ledger</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {bookings.map((b) => (
-                  <div key={b.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #1E293B' }}>
+                  <div key={b.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: `1px solid ${theme.colors.borderLight}` }}>
                     <div>
-                      <div style={{ fontWeight: 700 }}>{b.customer} → {b.merchant}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>{b.service}</div>
+                      <div style={{ fontWeight: 800, color: theme.colors.primaryNavy }}>{b.customer} → {b.merchant}</div>
+                      <div style={{ fontSize: '0.8rem', color: theme.colors.textMuted }}>{b.service}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 700, color: '#38B6FF' }}>{b.amount}</div>
-                      <span style={{ fontSize: '0.75rem', color: b.status === 'Confirmed' ? '#10B981' : '#F59E0B' }}>
+                      <div style={{ fontWeight: 800, color: theme.colors.sunsetOrange }}>{b.amount}</div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: b.status === 'Confirmed' ? '#059669' : '#D97706' }}>
                         {b.status}
                       </span>
                     </div>
@@ -235,11 +239,11 @@ export default function AdminDashboard({ onNavigate }) {
         )}
 
         {(activeTab === 'merchants' || activeTab === 'revenue') && (
-          <div style={{ backgroundColor: '#0F172A', borderRadius: theme.radii.xl, border: '1px solid #1E293B', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 700 }}>Registered Merchant Partners</h3>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, padding: '24px', boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 800, color: theme.colors.primaryNavy }}>Registered Merchant Partners</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                <tr style={{ borderBottom: `1px solid ${theme.colors.borderLight}`, color: theme.colors.textMuted }}>
                   <th style={{ padding: '12px' }}>Business</th>
                   <th style={{ padding: '12px' }}>Category</th>
                   <th style={{ padding: '12px' }}>Rating</th>
@@ -249,16 +253,16 @@ export default function AdminDashboard({ onNavigate }) {
               </thead>
               <tbody>
                 {merchants.map((m) => (
-                  <tr key={m.id} style={{ borderBottom: '1px solid #1E293B' }}>
-                    <td style={{ padding: '14px 12px', fontWeight: 600 }}>{m.name}</td>
-                    <td style={{ padding: '14px 12px', color: '#94A3B8' }}>{m.category}</td>
-                    <td style={{ padding: '14px 12px' }}>★ {m.rating}</td>
+                  <tr key={m.id} style={{ borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                    <td style={{ padding: '14px 12px', fontWeight: 700, color: theme.colors.primaryNavy }}>{m.name}</td>
+                    <td style={{ padding: '14px 12px', color: theme.colors.textSecondary }}>{m.category}</td>
+                    <td style={{ padding: '14px 12px', color: '#D97706', fontWeight: 700 }}>★ {m.rating}</td>
                     <td style={{ padding: '14px 12px' }}>
-                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: m.subscribed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: m.subscribed ? '#10B981' : '#EF4444' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 800, backgroundColor: m.subscribed ? '#DCFCE7' : '#FEE2E2', color: m.subscribed ? '#166534' : '#991B1B' }}>
                         {m.subscribed ? 'Active' : 'Unpaid'}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 12px', color: '#10B981', fontWeight: 700 }}>{m.revenue}</td>
+                    <td style={{ padding: '14px 12px', color: '#059669', fontWeight: 800 }}>{m.revenue}</td>
                   </tr>
                 ))}
               </tbody>
@@ -267,11 +271,11 @@ export default function AdminDashboard({ onNavigate }) {
         )}
 
         {activeTab === 'users' && (
-          <div style={{ backgroundColor: '#0F172A', borderRadius: theme.radii.xl, border: '1px solid #1E293B', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 700 }}>Customer Directory</h3>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, padding: '24px', boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 800, color: theme.colors.primaryNavy }}>Customer Directory</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                <tr style={{ borderBottom: `1px solid ${theme.colors.borderLight}`, color: theme.colors.textMuted }}>
                   <th style={{ padding: '12px' }}>User</th>
                   <th style={{ padding: '12px' }}>Email</th>
                   <th style={{ padding: '12px' }}>Role</th>
@@ -281,13 +285,13 @@ export default function AdminDashboard({ onNavigate }) {
               </thead>
               <tbody>
                 {recentUsers.map((u) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #1E293B' }}>
-                    <td style={{ padding: '14px 12px', fontWeight: 600 }}>{u.name}</td>
-                    <td style={{ padding: '14px 12px', color: '#94A3B8' }}>{u.email}</td>
-                    <td style={{ padding: '14px 12px', textTransform: 'capitalize' }}>{u.role}</td>
-                    <td style={{ padding: '14px 12px', color: '#94A3B8' }}>{u.joined}</td>
+                  <tr key={u.id} style={{ borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                    <td style={{ padding: '14px 12px', fontWeight: 700, color: theme.colors.primaryNavy }}>{u.name}</td>
+                    <td style={{ padding: '14px 12px', color: theme.colors.textSecondary }}>{u.email}</td>
+                    <td style={{ padding: '14px 12px', textTransform: 'capitalize', color: theme.colors.textSecondary }}>{u.role}</td>
+                    <td style={{ padding: '14px 12px', color: theme.colors.textMuted }}>{u.joined}</td>
                     <td style={{ padding: '14px 12px' }}>
-                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: u.status === 'Active' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: u.status === 'Active' ? '#10B981' : '#EF4444' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 800, backgroundColor: u.status === 'Active' ? '#DCFCE7' : '#FEE2E2', color: u.status === 'Active' ? '#166534' : '#991B1B' }}>
                         {u.status}
                       </span>
                     </td>
@@ -299,11 +303,11 @@ export default function AdminDashboard({ onNavigate }) {
         )}
 
         {activeTab === 'bookings' && (
-          <div style={{ backgroundColor: '#0F172A', borderRadius: theme.radii.xl, border: '1px solid #1E293B', padding: '24px' }}>
-            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 700 }}>Global Booking Ledger</h3>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: theme.radii.xl, border: `1px solid ${theme.colors.borderLight}`, padding: '24px', boxShadow: '0 4px 12px rgba(15, 30, 54, 0.04)' }}>
+            <h3 style={{ margin: '0 0 20px 0', fontSize: '1.15rem', fontWeight: 800, color: theme.colors.primaryNavy }}>Global Booking Ledger</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #1E293B', color: '#94A3B8' }}>
+                <tr style={{ borderBottom: `1px solid ${theme.colors.borderLight}`, color: theme.colors.textMuted }}>
                   <th style={{ padding: '12px' }}>Booking ID</th>
                   <th style={{ padding: '12px' }}>Customer</th>
                   <th style={{ padding: '12px' }}>Merchant</th>
@@ -314,14 +318,14 @@ export default function AdminDashboard({ onNavigate }) {
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} style={{ borderBottom: '1px solid #1E293B' }}>
-                    <td style={{ padding: '14px 12px', fontWeight: 600, color: '#38B6FF' }}>{b.id}</td>
-                    <td style={{ padding: '14px 12px' }}>{b.customer}</td>
-                    <td style={{ padding: '14px 12px', color: '#94A3B8' }}>{b.merchant}</td>
-                    <td style={{ padding: '14px 12px' }}>{b.service}</td>
-                    <td style={{ padding: '14px 12px', fontWeight: 700 }}>{b.amount}</td>
+                  <tr key={b.id} style={{ borderBottom: `1px solid ${theme.colors.borderLight}` }}>
+                    <td style={{ padding: '14px 12px', fontWeight: 800, color: theme.colors.sunsetOrange }}>{b.id}</td>
+                    <td style={{ padding: '14px 12px', fontWeight: 700, color: theme.colors.primaryNavy }}>{b.customer}</td>
+                    <td style={{ padding: '14px 12px', color: theme.colors.textSecondary }}>{b.merchant}</td>
+                    <td style={{ padding: '14px 12px', color: theme.colors.textSecondary }}>{b.service}</td>
+                    <td style={{ padding: '14px 12px', fontWeight: 800, color: theme.colors.primaryNavy }}>{b.amount}</td>
                     <td style={{ padding: '14px 12px' }}>
-                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: b.status === 'Confirmed' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: b.status === 'Confirmed' ? '#10B981' : '#F59E0B' }}>
+                      <span style={{ padding: '4px 10px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 800, backgroundColor: b.status === 'Confirmed' ? '#DCFCE7' : '#FEF3C7', color: b.status === 'Confirmed' ? '#166534' : '#D97706' }}>
                         {b.status}
                       </span>
                     </td>
@@ -335,4 +339,3 @@ export default function AdminDashboard({ onNavigate }) {
     </div>
   );
 }
-
