@@ -13,7 +13,12 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Check
+  Check,
+  Scissors,
+  Flower2,
+  Smile,
+  Car,
+  Activity
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
@@ -47,6 +52,29 @@ const CATEGORIES = [
   { label: 'Car Detailing', icon: '🚗' },
   { label: 'Fitness & Yoga', icon: '🧘' },
 ];
+
+/**
+ * Returns exact category icon component and theme accent color
+ */
+function getCategoryIcon(serviceType, size = 12) {
+  const type = (serviceType || '').toLowerCase();
+  if (type.includes('salon') || type.includes('barber') || type.includes('hair') || type.includes('nail')) {
+    return <Scissors size={size} color="#FF7A00" />;
+  }
+  if (type.includes('spa') || type.includes('massage') || type.includes('wellness')) {
+    return <Flower2 size={size} color="#EC4899" />;
+  }
+  if (type.includes('dent') || type.includes('smile') || type.includes('clinic')) {
+    return <Smile size={size} color="#38B6FF" />;
+  }
+  if (type.includes('car') || type.includes('wash') || type.includes('auto') || type.includes('detail')) {
+    return <Car size={size} color="#F59E0B" />;
+  }
+  if (type.includes('fit') || type.includes('yoga') || type.includes('gym')) {
+    return <Activity size={size} color="#10B981" />;
+  }
+  return <Sparkles size={size} color="#FF7A00" />;
+}
 
 // Category-specific cover image gradients & photos for luxury card visuals
 const SERVICE_COVERS = {
@@ -608,19 +636,21 @@ export default function CustomerHome({ onNavigate }) {
                       <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
                         <span
                           style={{
-                            backgroundColor: 'rgba(15, 30, 54, 0.75)',
-                            backdropFilter: 'blur(4px)',
+                            backgroundColor: 'rgba(15, 30, 54, 0.8)',
+                            backdropFilter: 'blur(6px)',
                             color: '#FFFFFF',
-                            fontSize: '0.72rem',
+                            fontSize: '0.74rem',
                             fontWeight: 800,
                             padding: '4px 10px',
                             borderRadius: '999px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
+                            gap: '5px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
                           }}
                         >
-                          <Sparkles size={11} color={theme.colors.sunsetOrange} /> {merchant.service_type || 'Service'}
+                          {getCategoryIcon(merchant.service_type, 12)}
+                          <span>{merchant.service_type || 'Service'}</span>
                         </span>
                       </div>
 
