@@ -395,6 +395,31 @@ export default function CustomerHome({ onNavigate }) {
               </span>
             </button>
 
+            {/* Admin Console Shortcut (if admin or demo test) */}
+            {(user.role === 'admin' || user.email?.includes('admin')) && (
+              <button
+                onClick={() => onNavigate('admin')}
+                title="Super Admin Console"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: theme.radii.full,
+                  border: '1px solid #FDBA74',
+                  backgroundColor: '#FFF7ED',
+                  color: '#C2410C',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(255, 122, 0, 0.1)',
+                }}
+              >
+                <ShieldCheck size={16} />
+                <span>Admin Console</span>
+              </button>
+            )}
+
             {/* Logout */}
             <button
               onClick={() => {

@@ -85,3 +85,30 @@ class Review(Base):
     booking = relationship("Booking", back_populates="review")
     merchant = relationship("Merchant", foreign_keys=[merchant_id])
     customer = relationship("User", foreign_keys=[customer_id])
+
+class MasterCategory(Base):
+    __tablename__ = "master_categories"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), unique=True, nullable=False)
+    icon = Column(String(50), default="✨", nullable=False)
+    description = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    display_order = Column(Float, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    sub_categories = relationship("MasterSubCategory", back_populates="category", cascade="all, delete-orphan", lazy="selectin")
+
+class MasterSubCategory(Base):
+    __tablename__ = "master_sub_categories"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    category_id = Column(UUID(as_uuid=True), ForeignKey("master_categories.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(120), nullable=False)
+    default_price = Column(Numeric(precision=10, scale=2), default=0.0)
+    duration_mins = Column(Float, default=30)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    category = relationship("MasterCategory", back_populates="sub_categories")
+

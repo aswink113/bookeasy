@@ -369,3 +369,4 @@ export default function ReviewModal({ booking, isOpen, onClose, onReviewSubmitte
     </div>
   );
 }
+

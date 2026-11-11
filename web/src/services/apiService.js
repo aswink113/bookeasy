@@ -428,5 +428,116 @@ export const apiService = {
     }
     return data;
   },
+
+  /**
+   * --- ADMIN & MASTER DATA APIs ---
+   */
+  async getAdminOverview() {
+    const res = await fetch(`${BASE_URL}/admin/overview`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to fetch admin overview');
+    return data;
+  },
+
+  async getAdminMerchants() {
+    const res = await fetch(`${BASE_URL}/admin/merchants`);
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data.detail || 'Failed to fetch merchants');
+    return data;
+  },
+
+  async toggleMerchantSubscription(merchantId) {
+    const res = await fetch(`${BASE_URL}/admin/merchants/${merchantId}/toggle-subscription`, {
+      method: 'PATCH',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to toggle subscription');
+    return data;
+  },
+
+  async getAdminUsers() {
+    const res = await fetch(`${BASE_URL}/admin/users`);
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data.detail || 'Failed to fetch users');
+    return data;
+  },
+
+  async getAdminBookings() {
+    const res = await fetch(`${BASE_URL}/admin/bookings`);
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data.detail || 'Failed to fetch bookings');
+    return data;
+  },
+
+  // Master Categories
+  async getMasterCategories() {
+    const res = await fetch(`${BASE_URL}/admin/categories`);
+    const data = await res.json().catch(() => ([]));
+    if (!res.ok) throw new Error(data.detail || 'Failed to fetch categories');
+    return data;
+  },
+
+  async createMasterCategory(payload) {
+    const res = await fetch(`${BASE_URL}/admin/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to create category');
+    return data;
+  },
+
+  async updateMasterCategory(categoryId, payload) {
+    const res = await fetch(`${BASE_URL}/admin/categories/${categoryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to update category');
+    return data;
+  },
+
+  async deleteMasterCategory(categoryId) {
+    const res = await fetch(`${BASE_URL}/admin/categories/${categoryId}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to delete category');
+    return data;
+  },
+
+  // Master Sub-Categories
+  async createMasterSubCategory(payload) {
+    const res = await fetch(`${BASE_URL}/admin/sub-categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to create sub-category');
+    return data;
+  },
+
+  async updateMasterSubCategory(subId, payload) {
+    const res = await fetch(`${BASE_URL}/admin/sub-categories/${subId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to update sub-category');
+    return data;
+  },
+
+  async deleteMasterSubCategory(subId) {
+    const res = await fetch(`${BASE_URL}/admin/sub-categories/${subId}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Failed to delete sub-category');
+    return data;
+  },
 };
 
