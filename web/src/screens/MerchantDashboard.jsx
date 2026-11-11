@@ -1,24 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle, User } from 'lucide-react';
+import { Store, Calendar, Clock, Check, X, Bell, Settings, LogOut, TrendingUp, Users, RefreshCw, XCircle, User, Zap, ShieldCheck } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 import EditProfileModal from '../widgets/EditProfileModal';
+import MerchantSubscriptionModal from '../widgets/MerchantSubscriptionModal';
 
 export default function MerchantDashboard({ onNavigate }) {
   const [requests, setRequests] = useState([]);
+  const [subscription, setSubscription] = useState({ is_subscribed: false, subscription_end: null });
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const user = apiService.getUser();
 
-  const loadMerchantBookings = async () => {
+  const loadDashboardData = async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await apiService.getMerchantBookings();
-      setRequests(data);
+      const [bookingsData, subData] = await Promise.all([
+        apiService.getMerchantBookings().catch(() => []),
+        apiService.getSubscriptionStatus().catch(() => ({ is_subscribed: false })),
+      ]);
+      setRequests(bookingsData);
+      setSubscription(subData);
     } catch (err) {
       setError(err.message || 'Failed to load bookings');
     } finally {
@@ -27,7 +34,7 @@ export default function MerchantDashboard({ onNavigate }) {
   };
 
   useEffect(() => {
-    loadMerchantBookings();
+    loadDashboardData();
   }, []);
 
   const handleAction = async (bookingId, newStatus) => {
@@ -47,7 +54,7 @@ export default function MerchantDashboard({ onNavigate }) {
           : 'Appointment cancelled/declined. Cancellation email sent to customer.'
       );
       setTimeout(() => setSuccessMsg(''), 4000);
-      await loadMerchantBookings();
+      await loadDashboardData();
     } catch (err) {
       alert(err.message || 'Failed to update booking status');
     } finally {
@@ -118,6 +125,48 @@ export default function MerchantDashboard({ onNavigate }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Subscription Status Pill */}
+            {subscription.is_subscribed ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: '#DCFCE7',
+                  color: '#166534',
+                  padding: '6px 14px',
+                  borderRadius: theme.radii.full,
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  border: '1px solid #BBF7D0',
+                }}
+              >
+                <ShieldCheck size={15} color="#166534" />
+                <span>Active Partner Pro</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowSubscriptionModal(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: theme.radii.md,
+                  padding: '8px 16px',
+                  fontSize: '0.82rem',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(255, 122, 0, 0.3)',
+                }}
+              >
+                <Zap size={15} />
+                <span>Upgrade to Partner Pro</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowEditProfile(true)}
               style={{
@@ -277,7 +326,7 @@ export default function MerchantDashboard({ onNavigate }) {
               <span style={{ fontSize: '0.85rem', color: theme.colors.textMuted }}>Manage incoming client bookings in real-time</span>
             </div>
             <button
-              onClick={loadMerchantBookings}
+              onClick={loadDashboardData}
               disabled={loading}
               style={{
                 display: 'flex',
@@ -446,6 +495,17 @@ export default function MerchantDashboard({ onNavigate }) {
         onProfileUpdated={(updated) => {
           setSuccessMsg(`Profile updated! Welcome, ${updated.name}`);
           setTimeout(() => setSuccessMsg(''), 4000);
+        }}
+      />
+
+      {/* Direct UPI QR Subscription & Activation Modal */}
+      <MerchantSubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+        onSubscribed={(res) => {
+          setSuccessMsg('🎉 Partner Pro Subscription Activated Successfully!');
+          setTimeout(() => setSuccessMsg(''), 5000);
+          loadDashboardData();
         }}
       />
     </div>

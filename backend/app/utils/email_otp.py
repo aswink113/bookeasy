@@ -296,3 +296,97 @@ async def send_booking_cancellation_email(
         print(f"✓ Booking cancellation email dispatched to {customer_email}")
     except Exception as e:
         print(f"[CANCELLATION EMAIL ERROR]: {e}")
+
+async def send_subscription_receipt_email(
+    merchant_email: str,
+    merchant_name: str,
+    shop_name: str,
+    plan_name: str,
+    amount: float,
+    utr_number: str,
+    subscription_end: str
+):
+    """Send branded subscription invoice & confirmation email to merchant partner"""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 24px; }}
+        .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 18px; padding: 36px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+        .logo-wrap {{ text-align: center; margin-bottom: 16px; }}
+        .logo-img {{ width: 95px; height: auto; display: block; margin: 0 auto; border: none; }}
+        .brand-title {{ font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px; margin-top: 8px; text-align: center; }}
+        .badge {{ text-align: center; margin-bottom: 16px; }}
+        .badge span {{ background-color: #DCFCE7; color: #166534; font-size: 13px; font-weight: 800; padding: 6px 16px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; }}
+        .title {{ font-size: 22px; font-weight: 800; color: #0F172A; text-align: center; margin: 0 0 8px; }}
+        .sub {{ font-size: 14px; color: #64748B; text-align: center; margin: 0 0 24px; line-height: 1.5; }}
+        .details-box {{ background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px; margin-bottom: 24px; }}
+        .perks-box {{ background-color: #EFF6FF; border-left: 4px solid #38B6FF; padding: 14px 16px; border-radius: 8px; font-size: 13px; color: #1E40AF; margin-bottom: 24px; line-height: 1.5; }}
+        .footer {{ font-size: 12px; color: #94A3B8; text-align: center; line-height: 1.5; border-top: 1px solid #E2E8F0; padding-top: 18px; }}
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="logo-wrap">
+          <img class="logo-img" src="{LOGO_PUBLIC_URL}" alt="Bokivo" width="95" style="display:block; margin: 0 auto;" />
+          <div class="brand-title">BOKIVO</div>
+        </div>
+
+        <div class="badge"><span>✓ Partner Subscription Active</span></div>
+        <h2 class="title">Payment & Subscription Receipt</h2>
+        <p class="sub">Hi {merchant_name}, your subscription for <strong>{shop_name}</strong> is now verified and active!</p>
+        
+        <div class="details-box">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: #64748B; font-weight: 600; font-size: 14px;">Plan</td>
+              <td style="padding: 6px 0; color: #0F172A; font-weight: 700; text-align: right; font-size: 14px;">{plan_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748B; font-weight: 600; font-size: 14px;">UPI UTR / Ref No.</td>
+              <td style="padding: 6px 0; color: #0284C7; font-weight: 700; text-align: right; font-size: 14px; font-family: monospace;">{utr_number}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748B; font-weight: 600; font-size: 14px;">Payment Method</td>
+              <td style="padding: 6px 0; color: #0F172A; font-weight: 600; text-align: right; font-size: 14px;">Direct UPI QR (0% Fee)</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748B; font-weight: 600; font-size: 14px;">Valid Until</td>
+              <td style="padding: 6px 0; color: #166534; font-weight: 800; text-align: right; font-size: 14px;">{subscription_end}</td>
+            </tr>
+            <tr style="border-top: 2px solid #E2E8F0;">
+              <td style="padding: 12px 0 0; color: #0F172A; font-weight: 800; font-size: 15px;">Amount Paid</td>
+              <td style="padding: 12px 0 0; color: #0284C7; font-weight: 900; text-align: right; font-size: 20px;">₹{amount:.2f}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="perks-box">
+          <strong>Partner Perks Activated:</strong><br/>
+          ✓ Priority listing across customer searches in your city<br/>
+          ✓ Verified Bokivo Partner trust badge<br/>
+          ✓ Real-time appointment slot dispatch & email notifications
+        </div>
+
+        <div class="footer">
+          &copy; 2026 Bokivo Team. All rights reserved. • Automated notification from bokivo.team@gmail.com
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    loop = asyncio.get_event_loop()
+    try:
+        await loop.run_in_executor(
+            None,
+            send_smtp_email,
+            merchant_email,
+            f"Bokivo Partner Subscription Verified - {shop_name}",
+            html
+        )
+        print(f"✓ Subscription receipt email dispatched to {merchant_email}")
+    except Exception as e:
+        print(f"[RECEIPT EMAIL ERROR]: {e}")

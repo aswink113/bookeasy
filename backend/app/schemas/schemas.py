@@ -107,3 +107,15 @@ class PaymentVerify(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+
+class UPIPlanInfo(BaseModel):
+    upi_id: str
+    payee_name: str
+    monthly_amount: float
+    quarterly_amount: float
+    annual_amount: float
+
+class SubmitUTRRequest(BaseModel):
+    utr_number: str
+    plan_cycle: str # 'monthly', 'quarterly', 'annual'
+    amount: float

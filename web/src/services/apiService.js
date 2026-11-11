@@ -318,5 +318,68 @@ export const apiService = {
     }
     return await res.json();
   },
+
+  /**
+   * Fetch Bokivo Direct UPI Plan Info
+   */
+  async getUPIPlanInfo() {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/payments/upi-info`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to fetch subscription info');
+    }
+    return await res.json();
+  },
+
+  /**
+   * Get Merchant Subscription Status
+   */
+  async getSubscriptionStatus() {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/payments/status`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to fetch subscription status');
+    }
+    return await res.json();
+  },
+
+  /**
+   * Submit 12-digit UPI UTR for Subscription Activation
+   */
+  async submitSubscriptionUTR(utrNumber, planCycle, amount) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/payments/submit-utr`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        utr_number: utrNumber,
+        plan_cycle: planCycle,
+        amount: amount,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to verify UPI payment UTR');
+    }
+    return data;
+  },
 };
 

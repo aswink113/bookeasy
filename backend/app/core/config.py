@@ -27,4 +27,11 @@ class Settings:
     CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "")
     CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 
+    # Direct UPI Payment Gateway Configuration
+    UPI_ID = os.getenv("UPI_ID", "bokivo@upi")
+    UPI_PAYEE_NAME = os.getenv("UPI_PAYEE_NAME", "Bokivo Partner Network")
+    SUBSCRIPTION_MONTHLY_PRICE = float(os.getenv("SUBSCRIPTION_MONTHLY_PRICE", "499.0"))
+    SUBSCRIPTION_QUARTERLY_PRICE = float(os.getenv("SUBSCRIPTION_QUARTERLY_PRICE", "1299.0"))
+    SUBSCRIPTION_ANNUAL_PRICE = float(os.getenv("SUBSCRIPTION_ANNUAL_PRICE", "4499.0"))
+
 settings = Settings()

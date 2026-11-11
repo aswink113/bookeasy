@@ -37,6 +37,20 @@ class Merchant(Base):
     # Relationships
     user = relationship("User", back_populates="merchant_profile")
     bookings = relationship("Booking", back_populates="merchant", foreign_keys="Booking.merchant_id")
+    payments = relationship("SubscriptionPayment", back_populates="merchant", order_by="desc(SubscriptionPayment.created_at)")
+
+class SubscriptionPayment(Base):
+    __tablename__ = "subscription_payments"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    merchant_id = Column(UUID(as_uuid=True), ForeignKey("merchants.id"), nullable=False)
+    utr_number = Column(String, unique=True, index=True, nullable=False)
+    amount = Column(Numeric(precision=10, scale=2), nullable=False)
+    plan_name = Column(String, default="Bokivo Partner Pro (Monthly)")
+    status = Column(String, default="verified") # 'verified', 'pending', 'rejected'
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    merchant = relationship("Merchant", back_populates="payments")
 
 class Booking(Base):
     __tablename__ = "bookings"
