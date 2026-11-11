@@ -729,19 +729,30 @@ export default function CustomerHome({ onNavigate }) {
                       </div>
                     </div>
 
-                    {/* Card Content Body - Slim & Crisp */}
-                    <div style={{ padding: '12px 16px 14px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                      <div>
+                    {/* Card Content Body - Slim & Crisp with Uniform Flex Stretch */}
+                    <div
+                      style={{
+                        padding: '12px 16px 14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      {/* Top Meta Area: Title & High-Contrast Address */}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
                         <h4
                           style={{
-                            margin: '0 0 3px',
+                            margin: '0 0 4px',
                             fontSize: '1.08rem',
                             fontWeight: 900,
                             color: theme.colors.primaryNavy,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
+                            lineHeight: 1.25,
                           }}
+                          title={merchant.shop_name}
                         >
                           {merchant.shop_name}
                         </h4>
@@ -749,8 +760,9 @@ export default function CustomerHome({ onNavigate }) {
                         {merchant.address && (
                           <div
                             style={{
-                              fontSize: '0.78rem',
-                              color: theme.colors.textMuted,
+                              fontSize: '0.8rem',
+                              color: '#475569', // Accessible high-contrast slate grey (WCAG AA compliant)
+                              fontWeight: 600,
                               display: 'flex',
                               alignItems: 'center',
                               gap: '5px',
@@ -759,8 +771,9 @@ export default function CustomerHome({ onNavigate }) {
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                             }}
+                            title={merchant.address}
                           >
-                            <MapPin size={12} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
+                            <MapPin size={13} color={theme.colors.sunsetOrange} style={{ flexShrink: 0 }} />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {merchant.address}
                             </span>
@@ -768,7 +781,7 @@ export default function CustomerHome({ onNavigate }) {
                         )}
                       </div>
 
-                      {/* Pricing and Book Now CTA in Logo Orange */}
+                      {/* Pricing and Book Now CTA in Logo Orange - Perfectly Pinned to Bottom */}
                       <div
                         style={{
                           display: 'flex',
@@ -776,11 +789,11 @@ export default function CustomerHome({ onNavigate }) {
                           justifyContent: 'space-between',
                           borderTop: `1px solid ${theme.colors.borderLight}`,
                           paddingTop: '10px',
-                          marginTop: '10px',
+                          marginTop: '12px',
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: '0.64rem', color: theme.colors.textMuted, textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
+                          <div style={{ fontSize: '0.64rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>
                             {priceInfo.isRange ? 'Price Range' : 'Starting Price'}
                           </div>
                           <div style={{ fontSize: priceInfo.isRange ? '1.05rem' : '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy, lineHeight: 1.1 }}>
