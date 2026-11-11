@@ -355,3 +355,4 @@ export default function ImageCropModal({ isOpen, imageSrc, onClose, onCropComple
     </div>
   );
 }
+

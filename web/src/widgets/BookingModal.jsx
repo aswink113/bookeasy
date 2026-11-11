@@ -15,9 +15,11 @@ import {
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 
-export default function BookingModal({ merchant, onClose, onConfirm }) {
+export default function BookingModal({ merchant, subService, onClose, onConfirm }) {
   // Step 1: 'datetime' (Choose Date & Slot) -> Step 2: 'confirm' (Review summary & Confirm)
   const [step, setStep] = useState('datetime');
+  const servicePrice = subService?.price || merchant.base_price || 299;
+  const serviceTitle = subService?.name || merchant.service_type;
 
   // Next 7 days generator for visual date cards
   const getDates = () => {
@@ -199,7 +201,7 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                 {step === 'datetime' ? 'Choose Date & Time' : 'Review & Confirm Booking'}
               </h3>
               <p style={{ margin: '3px 0 0', fontSize: '0.84rem', color: theme.colors.sunsetOrange, fontWeight: 700 }}>
-                {merchant.shop_name} • <span style={{ color: theme.colors.tealAccent }}>{merchant.service_type}</span>
+                {merchant.shop_name} • <span style={{ color: theme.colors.tealAccent }}>{serviceTitle}</span>
               </p>
             </div>
           </div>
@@ -513,8 +515,8 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                   <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
                     {merchant.shop_name}
                   </h4>
-                  <span style={{ fontSize: '0.82rem', color: theme.colors.accentBlue, fontWeight: 700 }}>
-                    {merchant.service_type}
+                  <span style={{ fontSize: '0.82rem', color: theme.colors.sunsetOrange, fontWeight: 800 }}>
+                    {serviceTitle}
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: theme.colors.textMuted, marginTop: '4px' }}>
                     <MapPin size={12} />
@@ -572,8 +574,8 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: theme.colors.textPrimary, marginBottom: '8px' }}>
-                  <span>Service Base Fee</span>
-                  <span>₹{merchant.base_price || 299}</span>
+                  <span>{subService ? `${subService.name} Fee` : 'Service Base Fee'}</span>
+                  <span style={{ fontWeight: 800 }}>₹{servicePrice}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: theme.colors.textPrimary, marginBottom: '8px' }}>
                   <span>Instant Booking Convenience Fee</span>
@@ -586,7 +588,7 @@ export default function BookingModal({ merchant, onClose, onConfirm }) {
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 900, color: theme.colors.primaryNavy, borderTop: `1px solid ${theme.colors.borderLight}`, paddingTop: '10px', marginTop: '10px' }}>
                   <span>Total Payable at Venue</span>
-                  <span style={{ color: theme.colors.primaryNavy }}>₹{merchant.base_price || 299}</span>
+                  <span style={{ color: theme.colors.primaryNavy, fontWeight: 900 }}>₹{servicePrice}</span>
                 </div>
               </div>
 

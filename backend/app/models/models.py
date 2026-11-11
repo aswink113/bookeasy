@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, ForeignKey, Enum, DateTime, Boolean, Numeric, Float, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, ForeignKey, Enum, DateTime, Boolean, Numeric, Float, text, JSON
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, declarative_base
 import uuid
 import datetime
@@ -34,6 +34,8 @@ class Merchant(Base):
     is_subscribed = Column(Boolean, default=False)
     subscription_end = Column(DateTime, nullable=True)
     image_url = Column(String, nullable=True)
+    gallery_photos = Column(JSONB, default=list)
+    sub_services = Column(JSONB, default=list)
     
     # Relationships
     user = relationship("User", back_populates="merchant_profile")

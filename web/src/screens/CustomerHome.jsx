@@ -27,6 +27,7 @@ import BookingModal from '../widgets/BookingModal';
 import CustomerBookingsModal from '../widgets/CustomerBookingsModal';
 import CustomerProfileDrawer from '../widgets/CustomerProfileDrawer';
 import EditProfileModal from '../widgets/EditProfileModal';
+import MerchantDetailModal from '../widgets/MerchantDetailModal';
 
 // Helper: Haversine distance in KM
 function getDistanceKm(lat1, lon1, lat2, lon2) {
@@ -106,7 +107,9 @@ export default function CustomerHome({ onNavigate }) {
   const [showBookingsModal, setShowBookingsModal] = useState(false);
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [selectedMerchantForDetail, setSelectedMerchantForDetail] = useState(null);
   const [selectedMerchantForBooking, setSelectedMerchantForBooking] = useState(null);
+  const [selectedSubServiceForBooking, setSelectedSubServiceForBooking] = useState(null);
 
   // Dynamic user location state
   const [location, setLocation] = useState({
@@ -136,8 +139,9 @@ export default function CustomerHome({ onNavigate }) {
     }
   };
 
-  const handleOpenBookingModal = (merchant) => {
+  const handleOpenBookingModal = (merchant, subService = null) => {
     setSelectedMerchantForBooking(merchant);
+    setSelectedSubServiceForBooking(subService);
   };
 
   const handleConfirmBooking = async (merchant, bookingDate, notes) => {
@@ -585,6 +589,7 @@ export default function CustomerHome({ onNavigate }) {
                 return (
                   <div
                     key={merchant.id}
+                    onClick={() => setSelectedMerchantForDetail(merchant)}
                     style={{
                       backgroundColor: '#FFFFFF',
                       borderRadius: '20px',
@@ -754,7 +759,10 @@ export default function CustomerHome({ onNavigate }) {
                         </div>
 
                         <button
-                          onClick={() => handleOpenBookingModal(merchant)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenBookingModal(merchant);
+                          }}
                           style={{
                             background: 'linear-gradient(135deg, #FF7A00 0%, #FF9533 100%)',
                             color: '#FFFFFF',
@@ -798,10 +806,25 @@ export default function CustomerHome({ onNavigate }) {
       {selectedMerchantForBooking && (
         <BookingModal
           merchant={selectedMerchantForBooking}
-          onClose={() => setSelectedMerchantForBooking(null)}
+          subService={selectedSubServiceForBooking}
+          onClose={() => {
+            setSelectedMerchantForBooking(null);
+            setSelectedSubServiceForBooking(null);
+          }}
           onConfirm={handleConfirmBooking}
         />
       )}
+
+      {/* Partner Detail View Modal (Rich Gallery + Sub-Categories with Photos & Prices) */}
+      <MerchantDetailModal
+        merchant={selectedMerchantForDetail}
+        isOpen={Boolean(selectedMerchantForDetail)}
+        onClose={() => setSelectedMerchantForDetail(null)}
+        onBookSubService={(merchant, subService) => {
+          setSelectedMerchantForDetail(null);
+          handleOpenBookingModal(merchant, subService);
+        }}
+      />
 
       {/* Customer Bookings Modal */}
       {showBookingsModal && (
