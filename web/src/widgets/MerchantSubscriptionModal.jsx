@@ -51,9 +51,9 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
   if (!isOpen) return null;
 
   const currentPrice = 
-    selectedCycle === 'annual' ? (plans?.annual_amount || 4499) :
-    selectedCycle === 'quarterly' ? (plans?.quarterly_amount || 1299) :
-    (plans?.monthly_amount || 499);
+    selectedCycle === 'annual' ? (plans?.annual_amount || 2699) :
+    selectedCycle === 'quarterly' ? (plans?.quarterly_amount || 799) :
+    (plans?.monthly_amount || 299);
 
   const upiId = plans?.upi_id || 'bokivo@upi';
   const payeeName = plans?.payee_name || 'Bokivo Partner Network';
@@ -276,9 +276,9 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
-                    { id: 'monthly', title: 'Monthly', price: plans?.monthly_amount || 499, period: '/ month', badge: null },
-                    { id: 'quarterly', title: '3 Months', price: plans?.quarterly_amount || 1299, period: '/ quarter', badge: 'Popular' },
-                    { id: 'annual', title: 'Annual', price: plans?.annual_amount || 4499, period: '/ year', badge: 'Save 25%' },
+                    { id: 'monthly', title: 'Monthly', price: plans?.monthly_amount || 299, original: null, period: '/ month', badge: 'Standard' },
+                    { id: 'quarterly', title: '3 Months', price: plans?.quarterly_amount || 799, original: 897, period: '/ quarter', badge: '11% OFF' },
+                    { id: 'annual', title: 'Annual', price: plans?.annual_amount || 2699, original: 3588, period: '/ year', badge: '25% OFF' },
                   ].map((p) => {
                     const isSelected = selectedCycle === p.id;
                     return (
@@ -302,11 +302,11 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                               position: 'absolute',
                               top: '-8px',
                               right: '8px',
-                              backgroundColor: theme.colors.sunsetOrange,
+                              backgroundColor: p.id === 'annual' ? '#16A34A' : theme.colors.sunsetOrange,
                               color: '#FFFFFF',
                               fontSize: '0.65rem',
                               fontWeight: 800,
-                              padding: '2px 6px',
+                              padding: '2px 7px',
                               borderRadius: '999px',
                             }}
                           >
@@ -316,8 +316,15 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
                         <div style={{ fontSize: '0.8rem', fontWeight: 700, color: isSelected ? theme.colors.sunsetOrange : theme.colors.textSecondary }}>
                           {p.title}
                         </div>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy, marginTop: '2px' }}>
-                          ₹{p.price}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 900, color: theme.colors.primaryNavy }}>
+                            ₹{p.price}
+                          </span>
+                          {p.original && (
+                            <span style={{ fontSize: '0.75rem', color: '#94A3B8', textDecoration: 'line-through' }}>
+                              ₹{p.original}
+                            </span>
+                          )}
                         </div>
                         <div style={{ fontSize: '0.68rem', color: theme.colors.textMuted }}>
                           {p.period}
@@ -486,3 +493,4 @@ export default function MerchantSubscriptionModal({ isOpen, onClose, onSubscribe
     </div>
   );
 }
+
