@@ -16,6 +16,8 @@ class UserCreate(UserBase):
     otp: Optional[str] = None
     shop_name: Optional[str] = None
     address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     service_type: Optional[str] = None
     base_price: Optional[Decimal] = None
     image_url: Optional[str] = None

@@ -36,6 +36,7 @@ import { apiService } from '../services/apiService';
 import EditProfileModal from '../widgets/EditProfileModal';
 import MerchantSubscriptionModal from '../widgets/MerchantSubscriptionModal';
 import ImageCropModal from '../widgets/ImageCropModal';
+import LocationAutocomplete from '../widgets/LocationAutocomplete';
 
 export default function MerchantDashboard({ onNavigate }) {
   // Navigation tabs: 'bookings' | 'services' | 'storefront' | 'reviews' | 'earnings'
@@ -1181,20 +1182,22 @@ export default function MerchantDashboard({ onNavigate }) {
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: theme.colors.primaryNavy, marginBottom: '6px' }}>
-                  Street Address & City
+                  Street Address & Location (Select from Verified Map)
                 </label>
-                <input
-                  type="text"
-                  required
+                <LocationAutocomplete
                   value={storeForm.address}
-                  onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: theme.radii.md,
-                    border: `1px solid ${theme.colors.borderLight}`,
-                    fontSize: '0.9rem',
+                  onChange={(val) => setStoreForm({ ...storeForm, address: val })}
+                  onLocationSelect={(place) => {
+                    setStoreForm({
+                      ...storeForm,
+                      address: place.name,
+                      latitude: place.lat,
+                      longitude: place.lng,
+                    });
                   }}
+                  required={true}
+                  placeholder="Type city, street, or landmark (e.g. Kannur, Kerala)..."
+                  showMapPreview={true}
                 />
               </div>
 

@@ -20,6 +20,7 @@ import {
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 import TermsModal from '../widgets/TermsModal';
+import LocationAutocomplete from '../widgets/LocationAutocomplete';
 
 export default function SignupScreen({ onNavigate }) {
   const [role, setRole] = useState('customer'); // 'customer' | 'merchant'
@@ -41,6 +42,7 @@ export default function SignupScreen({ onNavigate }) {
   // Merchant specific fields
   const [shopName, setShopName] = useState('');
   const [address, setAddress] = useState('');
+  const [merchantCoords, setMerchantCoords] = useState(null);
   const [serviceType, setServiceType] = useState('Salon');
 
   useEffect(() => {
@@ -123,6 +125,17 @@ export default function SignupScreen({ onNavigate }) {
       return;
     }
 
+    if (role === 'merchant') {
+      if (!shopName.trim()) {
+        setError('Please enter your shop name.');
+        return;
+      }
+      if (!address || !merchantCoords) {
+        setError('Please select a verified location from the map suggestions.');
+        return;
+      }
+    }
+
     setLoading(true);
     setError('');
 
@@ -136,6 +149,8 @@ export default function SignupScreen({ onNavigate }) {
         shopName,
         address,
         serviceType,
+        latitude: merchantCoords?.lat,
+        longitude: merchantCoords?.lng,
       });
 
       // Auto login after signup
@@ -488,27 +503,22 @@ export default function SignupScreen({ onNavigate }) {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: theme.colors.textPrimary, marginBottom: '6px' }}>
-                  Shop Address / Location
+                  Shop Address / Location (Select from Verified Map)
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <MapPin size={18} color={theme.colors.textMuted} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type="text"
-                    required={role === 'merchant'}
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="MG Road, Bangalore, India"
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      padding: '11px 14px 11px 42px',
-                      borderRadius: theme.radii.md,
-                      border: `1px solid ${theme.colors.borderLight}`,
-                      fontSize: '0.95rem',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
+                <LocationAutocomplete
+                  value={address}
+                  onChange={(val) => {
+                    setAddress(val);
+                    setMerchantCoords(null); // Must re-select to verify
+                  }}
+                  onLocationSelect={(place) => {
+                    setAddress(place.name);
+                    setMerchantCoords({ lat: place.lat, lng: place.lng });
+                  }}
+                  required={role === 'merchant'}
+                  placeholder="Type city, street, or landmark (e.g. Kannur, Kerala)..."
+                  showMapPreview={true}
+                />
               </div>
 
               <div>

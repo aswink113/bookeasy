@@ -85,11 +85,14 @@ async def signup(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         if not user_in.shop_name or not user_in.address:
             raise HTTPException(status_code=400, detail="Merchant shop name and address required")
         
-        # Geocode address
-        try:
-            lat, lng = await geocode_address(user_in.address)
-        except Exception:
-            lat, lng = 12.9716, 77.5946
+        # Geocode address if explicit coordinates not supplied
+        if user_in.latitude is not None and user_in.longitude is not None:
+            lat, lng = user_in.latitude, user_in.longitude
+        else:
+            try:
+                lat, lng = await geocode_address(user_in.address)
+            except Exception:
+                lat, lng = 12.9716, 77.5946
             
         new_merchant = Merchant(
             id=new_user.id,
