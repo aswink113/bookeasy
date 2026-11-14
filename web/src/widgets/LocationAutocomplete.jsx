@@ -56,26 +56,45 @@ export default function LocationAutocomplete({
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
             query.trim()
-          )}&limit=6&addressdetails=1`
+          )}&limit=8&addressdetails=1`
         );
         if (res.ok) {
           const data = await res.json();
-          setResults(
-            data.map((item) => ({
-              name: item.display_name,
-              shortName: item.name || item.display_name.split(',')[0],
-              city:
-                item.address?.city ||
-                item.address?.town ||
-                item.address?.state_district ||
-                item.address?.state ||
-                item.display_name.split(',')[0],
-              state: item.address?.state || '',
-              country: item.address?.country || '',
-              lat: parseFloat(item.lat),
-              lng: parseFloat(item.lon),
-            }))
-          );
+          // Deduplicate entries that have identical display_name or identical coordinates
+          const seenNames = new Set();
+          const uniqueResults = [];
+
+          for (const item of data) {
+            const cleanDisplayName = (item.display_name || '').trim();
+            const lowerName = cleanDisplayName.toLowerCase();
+            
+            // Check if we've already included this exact location text
+            if (!seenNames.has(lowerName)) {
+              seenNames.add(lowerName);
+              
+              const placeType = item.type === 'administrative' 
+                ? 'District / Region' 
+                : (item.type ? item.type.charAt(0).toUpperCase() + item.type.slice(1) : 'Location');
+
+              uniqueResults.push({
+                name: cleanDisplayName,
+                shortName: item.name || cleanDisplayName.split(',')[0],
+                typeLabel: placeType,
+                city:
+                  item.address?.city ||
+                  item.address?.town ||
+                  item.address?.state_district ||
+                  item.address?.state ||
+                  cleanDisplayName.split(',')[0],
+                state: item.address?.state || '',
+                country: item.address?.country || '',
+                lat: parseFloat(item.lat),
+                lng: parseFloat(item.lon),
+              });
+            }
+          }
+
+          setResults(uniqueResults);
           setIsOpen(true);
         }
       } catch (err) {
@@ -237,10 +256,17 @@ export default function LocationAutocomplete({
                 <MapPin size={15} color={theme.colors.sunsetOrange} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {place.shortName}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {place.shortName}
+                  </span>
+                  {place.typeLabel && (
+                    <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#475569', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                      {place.typeLabel}
+                    </span>
+                  )}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: theme.colors.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: '0.78rem', color: theme.colors.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
                   {place.name}
                 </div>
               </div>
@@ -294,3 +320,4 @@ export default function LocationAutocomplete({
     </div>
   );
 }
+
