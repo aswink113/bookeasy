@@ -416,6 +416,83 @@ export const apiService = {
   },
 
   /**
+   * Get authenticated merchant profile details
+   */
+  async getMyMerchantProfile() {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/merchants/me`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to fetch merchant profile');
+    }
+    return data;
+  },
+
+  /**
+   * Update general business profile info (hours, phone, about, base price, open status)
+   */
+  async updateMerchantProfile(payload) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/merchants/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to update merchant profile');
+    }
+    return data;
+  },
+
+  /**
+   * Update sub-services menu & pricing
+   */
+  async updateMerchantSubServices(subServices) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/merchants/sub-services`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ sub_services: subServices }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to update sub-services');
+    }
+    return data;
+  },
+
+  /**
+   * Update merchant gallery photos
+   */
+  async updateMerchantGallery(galleryPhotos) {
+    const token = this.getToken();
+    const res = await fetch(`${BASE_URL}/merchants/gallery`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ gallery_photos: galleryPhotos }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to update gallery');
+    }
+    return data;
+  },
+
+  /**
    * Submit 12-digit UPI UTR for Subscription or 14-day Free Trial Activation
    */
   async submitSubscriptionUTR(utrNumber, planCycle, amount, merchantUpiId) {

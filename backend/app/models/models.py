@@ -36,6 +36,11 @@ class Merchant(Base):
     image_url = Column(String, nullable=True)
     gallery_photos = Column(JSONB, default=list)
     sub_services = Column(JSONB, default=list)
+    opening_time = Column(String, default="09:00")
+    closing_time = Column(String, default="20:00")
+    phone = Column(String, default="")
+    about = Column(String, default="")
+    is_open_now = Column(Boolean, default=True)
     
     # Relationships
     user = relationship("User", back_populates="merchant_profile")
