@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   User, 
   Mail, 
@@ -37,15 +37,34 @@ export default function SignupScreen({ onNavigate }) {
   const [otpTimer, setOtpTimer] = useState(0);
   const [otpNotice, setOtpNotice] = useState('');
 
+  // Dynamic Categories from database
+  const [categoriesList, setCategoriesList] = useState([]);
+
   // Merchant specific fields
   const [shopName, setShopName] = useState('');
   const [address, setAddress] = useState('');
   const [serviceType, setServiceType] = useState('Salon');
-  const [basePrice, setBasePrice] = useState('');
-  const [croppedImage, setCroppedImage] = useState(null);
-  const [tempImageForCrop, setTempImageForCrop] = useState(null);
-  const [showCropModal, setShowCropModal] = useState(false);
-  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch master categories from API
+    apiService.getMasterCategories()
+      .then((cats) => {
+        if (Array.isArray(cats) && cats.length > 0) {
+          setCategoriesList(cats);
+          setServiceType(cats[0].name);
+        }
+      })
+      .catch(() => {
+        // Fallback default categories
+        setCategoriesList([
+          { name: 'Salon', icon: '✂️' },
+          { name: 'Spa & Massage', icon: '💆' },
+          { name: 'Dental Clinic', icon: '🦷' },
+          { name: 'Car Detailing', icon: '🚗' },
+          { name: 'Fitness & Yoga', icon: '🧘' },
+        ]);
+      });
+  }, []);
 
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -119,8 +138,6 @@ export default function SignupScreen({ onNavigate }) {
         shopName,
         address,
         serviceType,
-        basePrice,
-        imageUrl: croppedImage,
       });
 
       // Auto login after signup
@@ -129,7 +146,7 @@ export default function SignupScreen({ onNavigate }) {
       if (role === 'customer') {
         onNavigate('customer-home');
       } else {
-        onNavigate('subscription');
+        onNavigate('merchant-dashboard');
       }
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -496,178 +513,36 @@ export default function SignupScreen({ onNavigate }) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: theme.colors.textPrimary, marginBottom: '6px' }}>
-                    Service Category
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Tag size={18} color={theme.colors.textMuted} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <select
-                      value={serviceType}
-                      onChange={(e) => setServiceType(e.target.value)}
-                      style={{
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        padding: '11px 14px 11px 42px',
-                        borderRadius: theme.radii.md,
-                        border: `1px solid ${theme.colors.borderLight}`,
-                        fontSize: '0.95rem',
-                        backgroundColor: '#FFFFFF',
-                        outline: 'none',
-                      }}
-                    >
-                      <option value="Salon">Salon</option>
-                      <option value="Spa & Massage">Spa & Massage</option>
-                      <option value="Car Detailing">Car Detailing</option>
-                      <option value="Dental Clinic">Dental Clinic</option>
-                      <option value="Fitness & Yoga">Fitness & Yoga</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: theme.colors.textPrimary, marginBottom: '6px' }}>
-                    Starting Price (₹)
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <DollarSign size={18} color={theme.colors.textMuted} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
-                    <input
-                      type="number"
-                      required={role === 'merchant'}
-                      value={basePrice}
-                      onChange={(e) => setBasePrice(e.target.value)}
-                      placeholder="350"
-                      style={{
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        padding: '11px 14px 11px 42px',
-                        borderRadius: theme.radii.md,
-                        border: `1px solid ${theme.colors.borderLight}`,
-                        fontSize: '0.95rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Shop Cover Picture with 16:9 Aspect Ratio Crop Option */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: theme.colors.textPrimary, marginBottom: '6px' }}>
-                  Shop Cover Photo (16:9 Ratio for Discovery Feed)
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: theme.colors.textPrimary, marginBottom: '6px' }}>
+                  Service Category
                 </label>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        setTempImageForCrop(reader.result);
-                        setShowCropModal(true);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-
-                {croppedImage ? (
-                  <div
+                <div style={{ position: 'relative' }}>
+                  <Tag size={18} color={theme.colors.textMuted} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                  <select
+                    value={serviceType}
+                    onChange={(e) => setServiceType(e.target.value)}
                     style={{
-                      position: 'relative',
                       width: '100%',
-                      aspectRatio: '16 / 9',
+                      boxSizing: 'border-box',
+                      padding: '11px 14px 11px 42px',
                       borderRadius: theme.radii.md,
-                      overflow: 'hidden',
-                      border: '2px solid #FF7A00',
-                      boxShadow: '0 4px 14px rgba(255, 122, 0, 0.2)',
+                      border: `1px solid ${theme.colors.borderLight}`,
+                      fontSize: '0.95rem',
+                      backgroundColor: '#FFFFFF',
+                      outline: 'none',
                     }}
                   >
-                    <img
-                      src={croppedImage}
-                      alt="Shop Cover Preview"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        display: 'flex',
-                        gap: '6px',
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{
-                          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                          backdropFilter: 'blur(4px)',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '8px',
-                          padding: '6px 10px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        <Crop size={13} /> Change / Re-crop
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      border: '2px dashed #CBD5E1',
-                      borderRadius: theme.radii.md,
-                      padding: '24px 16px',
-                      textAlign: 'center',
-                      backgroundColor: '#F8FAFC',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = theme.colors.sunsetOrange;
-                      e.currentTarget.style.backgroundColor = theme.colors.sunsetOrangeLight;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#CBD5E1';
-                      e.currentTarget.style.backgroundColor = '#F8FAFC';
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '50%',
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '8px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      }}
-                    >
-                      <Camera size={20} color={theme.colors.sunsetOrange} />
-                    </div>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
-                      Upload & Crop Cover Photo
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: theme.colors.textMuted, marginTop: '2px' }}>
-                      PNG, JPG, WebP • Auto-crops to ultra-sharp 16:9 ratio
-                    </div>
-                  </div>
-                )}
+                    {categoriesList.map((cat, idx) => (
+                      <option key={cat.id || idx} value={cat.name}>
+                        {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: theme.colors.textMuted, marginTop: '6px' }}>
+                  💡 Service catalog, pricing, hours, and store photos can be configured inside your Merchant Studio after signup.
+                </div>
               </div>
             </div>
           )}

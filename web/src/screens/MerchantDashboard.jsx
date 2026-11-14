@@ -291,6 +291,27 @@ export default function MerchantDashboard({ onNavigate }) {
     .filter((r) => r.status === 'accepted' || r.status === 'confirmed' || r.status === 'completed')
     .reduce((sum, r) => sum + (Number(r.base_price) || 0), 0);
 
+  // Calculate Profile Completion Percentage
+  const calculateProfileCompletion = () => {
+    let score = 0;
+    const checklist = [
+      { key: 'basic', label: 'Store Name & Category', done: Boolean(profile?.shop_name && profile?.service_type), points: 20 },
+      { key: 'address', label: 'Store Address & Location', done: Boolean(profile?.address), points: 15 },
+      { key: 'hours', label: 'Operating Hours & Phone', done: Boolean(profile?.opening_time && profile?.closing_time && profile?.phone), points: 15 },
+      { key: 'cover', label: '16:9 Shop Cover Photo', done: Boolean(profile?.image_url), points: 15 },
+      { key: 'services', label: 'At least 1 Sub-Service with Pricing', done: Boolean(profile?.sub_services && profile?.sub_services.length >= 1), points: 15 },
+      { key: 'gallery', label: 'Minimum 3 Gallery Photos', done: Boolean(profile?.gallery_photos && profile?.gallery_photos.length >= 3), points: 20 },
+    ];
+
+    checklist.forEach((item) => {
+      if (item.done) score += item.points;
+    });
+
+    return { percentage: Math.min(score, 100), checklist };
+  };
+
+  const { percentage: profilePercentage, checklist: profileChecklist } = calculateProfileCompletion();
+
   const formatBookingDate = (dateStr) => {
     try {
       const d = new Date(dateStr);
@@ -535,6 +556,123 @@ export default function MerchantDashboard({ onNavigate }) {
             {error}
           </div>
         )}
+
+        {/* Profile Completion Circle & Checklist Banner */}
+        <div
+          style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: theme.radii.xl,
+            border: `1px solid ${theme.colors.borderLight}`,
+            padding: '20px 24px',
+            marginBottom: '24px',
+            boxShadow: '0 2px 8px rgba(15, 30, 54, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '20px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* SVG Circular Progress Meter */}
+            <div style={{ position: 'relative', width: '74px', height: '74px', flexShrink: 0 }}>
+              <svg width="74" height="74" viewBox="0 0 74 74" style={{ transform: 'rotate(-90deg)' }}>
+                {/* Background Track */}
+                <circle
+                  cx="37"
+                  cy="37"
+                  r="30"
+                  stroke="#F1F5F9"
+                  strokeWidth="7"
+                  fill="transparent"
+                />
+                {/* Active Progress */}
+                <circle
+                  cx="37"
+                  cy="37"
+                  r="30"
+                  stroke={profilePercentage === 100 ? '#10B981' : '#FF7A00'}
+                  strokeWidth="7"
+                  strokeDasharray={2 * Math.PI * 30}
+                  strokeDashoffset={(2 * Math.PI * 30) * (1 - profilePercentage / 100)}
+                  strokeLinecap="round"
+                  fill="transparent"
+                  style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+                />
+              </svg>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.95rem',
+                  fontWeight: 900,
+                  color: profilePercentage === 100 ? '#059669' : '#C2410C',
+                }}
+              >
+                {profilePercentage}%
+              </div>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                  {profilePercentage === 100 ? 'Store Profile 100% Completed! 🎉' : 'Complete Your Storefront Profile'}
+                </h3>
+                <span
+                  style={{
+                    backgroundColor: profilePercentage === 100 ? '#DCFCE7' : '#FEF3C7',
+                    color: profilePercentage === 100 ? '#166534' : '#92400E',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  {profilePercentage === 100 ? 'Ready for Customers' : 'Action Required'}
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: theme.colors.textMuted }}>
+                Add your sub-service pricing and at least 3 high-quality store photos to maximize client bookings.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Checklist Chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxWidth: '580px' }}>
+            {profileChecklist.map((item) => (
+              <div
+                key={item.key}
+                onClick={() => {
+                  if (item.key === 'services') setActiveTab('services');
+                  else if (item.key === 'gallery') setActiveTab('gallery');
+                  else if (item.key === 'cover') photoInputRef.current?.click();
+                  else setActiveTab('storefront');
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '5px 10px',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  backgroundColor: item.done ? '#F0FDF4' : '#FFF7ED',
+                  color: item.done ? '#166534' : '#C2410C',
+                  border: `1px solid ${item.done ? '#BBF7D0' : '#FFEDD5'}`,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                title={item.done ? 'Completed' : 'Click to complete'}
+              >
+                {item.done ? <Check size={12} color="#166534" /> : <Clock size={12} color="#C2410C" />}
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* KPI Quick Stats Row */}
         <div
@@ -1215,19 +1353,79 @@ export default function MerchantDashboard({ onNavigate }) {
             }}
           >
             <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
-                Venue Photo Gallery
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
+                  Venue Photo Gallery
+                </h3>
+                <span
+                  style={{
+                    backgroundColor: (profile?.gallery_photos?.length || 0) >= 3 ? '#DCFCE7' : '#FEF3C7',
+                    color: (profile?.gallery_photos?.length || 0) >= 3 ? '#166534' : '#92400E',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  {(profile?.gallery_photos?.length || 0) >= 3 ? `✓ ${profile?.gallery_photos?.length} Photos (Minimum Met)` : `⚠️ ${profile?.gallery_photos?.length || 0} / 3 Photos (Need Minimum 3)`}
+                </span>
+              </div>
               <span style={{ fontSize: '0.85rem', color: theme.colors.textMuted }}>
-                High-resolution pictures of your salon, spa equipment, waiting lounge, and styling chairs.
+                Add at least 3 high-resolution pictures of your store, styling stations, equipment, and customer reception.
               </span>
             </div>
 
             {/* Add photo bar */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', maxWidth: '600px' }}>
               <input
+                type="file"
+                ref={galleryInputRef}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                      const currentGallery = Array.isArray(profile?.gallery_photos) ? [...profile.gallery_photos] : [];
+                      currentGallery.push(reader.result);
+                      try {
+                        await apiService.updateMerchantGallery(currentGallery);
+                        showToast('Photo uploaded to gallery!');
+                        await loadDashboardData();
+                      } catch (err) {
+                        alert(err.message || 'Failed to upload photo');
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                style={{
+                  backgroundColor: '#0F1E36',
+                  color: '#FFFFFF',
+                  padding: '10px 18px',
+                  borderRadius: theme.radii.md,
+                  border: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <Camera size={15} /> Upload from Device
+              </button>
+
+              <input
                 type="url"
-                placeholder="Paste image URL (https://...)"
+                placeholder="Or paste image URL (https://...)"
                 value={newGalleryUrl}
                 onChange={(e) => setNewGalleryUrl(e.target.value)}
                 style={{
@@ -1241,7 +1439,7 @@ export default function MerchantDashboard({ onNavigate }) {
               <button
                 onClick={handleAddGalleryPhoto}
                 style={{
-                  backgroundColor: theme.colors.primaryNavy,
+                  backgroundColor: theme.colors.sunsetOrange,
                   color: '#FFFFFF',
                   padding: '10px 18px',
                   borderRadius: theme.radii.md,
@@ -1252,9 +1450,10 @@ export default function MerchantDashboard({ onNavigate }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                <Plus size={15} /> Add Photo
+                <Plus size={15} /> Add URL
               </button>
             </div>
 
