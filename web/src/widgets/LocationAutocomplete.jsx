@@ -1,6 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, Loader2, Check, Navigation, AlertCircle, Building2 } from 'lucide-react';
+import { MapPin, Search, Loader2, Check, Navigation, AlertCircle, Building2, Sparkles } from 'lucide-react';
 import { theme } from '../theme/appTheme';
+
+/**
+ * Common business & address stop words for NLP query relaxation
+ */
+const NLP_STOP_WORDS = new Set([
+  'thread', 'threads', 'house', 'pvt', 'ltd', 'limited', 'center', 'centre',
+  'shop', 'store', 'saloon', 'salon', 'clinic', 'hospital', 'spa', 'studio',
+  'enterprise', 'enterprises', 'agency', 'traders', 'near', 'opp', 'opposite',
+  'beside', 'behind', 'road', 'street', 'point', 'complex', 'building', 'plaza'
+]);
+
+/**
+ * Natural Language Processing helper to generate smart search variations:
+ * 1. Exact query: "indeevaram thread"
+ * 2. Cleaned query without business stop words: "indeevaram"
+ * 3. Individual prominent keywords
+ */
+function generateNLPQueries(rawQuery) {
+  const clean = rawQuery.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+  const tokens = clean.split(/\s+/).filter(Boolean);
+  const meaningfulTokens = tokens.filter((t) => !NLP_STOP_WORDS.has(t));
+
+  const queries = [rawQuery.trim()];
+
+  if (meaningfulTokens.length > 0) {
+    const relaxed = meaningfulTokens.join(' ');
+    if (relaxed.toLowerCase() !== rawQuery.trim().toLowerCase()) {
+      queries.push(relaxed);
+    }
+  }
+
+  // Also include any standalone distinctive token of length >= 4
+  for (const token of meaningfulTokens) {
+    if (token.length >= 4 && !queries.includes(token)) {
+      queries.push(token);
+    }
+  }
+
+  return queries;
+}
 
 /**
  * LocationAutocomplete
@@ -54,112 +94,120 @@ export default function LocationAutocomplete({
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const queryTerm = query.trim();
-
-        // Run both Nominatim and Photon in parallel to capture addresses AND business names / POIs
-        const [nomRes, photRes] = await Promise.allSettled([
-          fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-              queryTerm
-            )}&limit=8&addressdetails=1`
-          ).then((r) => (r.ok ? r.json() : [])),
-          fetch(
-            `https://photon.komoot.io/api/?q=${encodeURIComponent(queryTerm)}&limit=8`
-          ).then((r) => (r.ok ? r.json() : null)),
-        ]);
-
-        const nomData = nomRes.status === 'fulfilled' && Array.isArray(nomRes.value) ? nomRes.value : [];
-        const photData =
-          photRes.status === 'fulfilled' && photRes.value?.features ? photRes.value.features : [];
-
+        const candidateQueries = generateNLPQueries(query);
         const seenNames = new Set();
         const seenCoords = new Set();
         const uniqueResults = [];
 
-        // 1. Process Nominatim results
-        for (const item of nomData) {
-          const cleanDisplayName = (item.display_name || '').trim();
-          const lowerName = cleanDisplayName.toLowerCase();
-          const lat = parseFloat(item.lat);
-          const lng = parseFloat(item.lon);
-          const coordKey = `${Math.round(lat * 200)}_${Math.round(lng * 200)}`;
+        // Waterfall search across NLP variations until we collect high-confidence candidates
+        for (const qTerm of candidateQueries) {
+          const [nomRes, photRes] = await Promise.allSettled([
+            fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                qTerm
+              )}&limit=8&addressdetails=1`
+            ).then((r) => (r.ok ? r.json() : [])),
+            fetch(
+              `https://photon.komoot.io/api/?q=${encodeURIComponent(qTerm)}&limit=8`
+            ).then((r) => (r.ok ? r.json() : null)),
+          ]);
 
-          if (!seenNames.has(lowerName) && !seenCoords.has(coordKey)) {
-            seenNames.add(lowerName);
-            seenCoords.add(coordKey);
+          const nomData = nomRes.status === 'fulfilled' && Array.isArray(nomRes.value) ? nomRes.value : [];
+          const photData =
+            photRes.status === 'fulfilled' && photRes.value?.features ? photRes.value.features : [];
 
-            const isBusiness =
-              item.class === 'shop' ||
-              item.class === 'amenity' ||
-              item.class === 'tourism' ||
-              item.class === 'leisure' ||
-              item.class === 'craft';
+          // 1. Process Nominatim results
+          for (const item of nomData) {
+            const cleanDisplayName = (item.display_name || '').trim();
+            const lowerName = cleanDisplayName.toLowerCase();
+            const lat = parseFloat(item.lat);
+            const lng = parseFloat(item.lon);
+            const coordKey = `${Math.round(lat * 200)}_${Math.round(lng * 200)}`;
 
-            const placeType = isBusiness
-              ? 'Business / Store'
-              : item.type === 'administrative'
-              ? 'District / Region'
-              : item.type
-              ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
-              : 'Location';
+            if (!seenNames.has(lowerName) && !seenCoords.has(coordKey)) {
+              seenNames.add(lowerName);
+              seenCoords.add(coordKey);
 
-            uniqueResults.push({
-              name: cleanDisplayName,
-              shortName: item.name || cleanDisplayName.split(',')[0],
-              typeLabel: placeType,
-              isBusiness,
-              city:
-                item.address?.city ||
-                item.address?.town ||
-                item.address?.state_district ||
-                item.address?.state ||
-                cleanDisplayName.split(',')[0],
-              state: item.address?.state || '',
-              country: item.address?.country || '',
-              lat,
-              lng,
-            });
+              const isBusiness =
+                item.class === 'shop' ||
+                item.class === 'amenity' ||
+                item.class === 'tourism' ||
+                item.class === 'leisure' ||
+                item.class === 'craft';
+
+              const placeType = isBusiness
+                ? 'Business / Store'
+                : item.type === 'administrative'
+                ? 'District / Region'
+                : item.type
+                ? item.type.charAt(0).toUpperCase() + item.type.slice(1)
+                : 'Location';
+
+              uniqueResults.push({
+                name: cleanDisplayName,
+                shortName: item.name || cleanDisplayName.split(',')[0],
+                typeLabel: placeType,
+                isBusiness,
+                matchedKeyword: qTerm !== query.trim() ? qTerm : null,
+                city:
+                  item.address?.city ||
+                  item.address?.town ||
+                  item.address?.state_district ||
+                  item.address?.state ||
+                  cleanDisplayName.split(',')[0],
+                state: item.address?.state || '',
+                country: item.address?.country || '',
+                lat,
+                lng,
+              });
+            }
           }
-        }
 
-        // 2. Process Photon POI results (great at finding business names / shops on maps)
-        for (const feat of photData) {
-          const p = feat.properties;
-          const parts = [p.name, p.street, p.city || p.district, p.state, p.country].filter(Boolean);
-          const fullName = parts.join(', ');
-          const lowerName = fullName.toLowerCase();
-          const lat = feat.geometry?.coordinates?.[1];
-          const lng = feat.geometry?.coordinates?.[0];
-          const coordKey = `${Math.round(lat * 200)}_${Math.round(lng * 200)}`;
+          // 2. Process Photon POI results
+          for (const feat of photData) {
+            const p = feat.properties;
+            const parts = [p.name, p.street, p.city || p.district, p.state, p.country].filter(Boolean);
+            const fullName = parts.join(', ');
+            const lowerName = fullName.toLowerCase();
+            const lat = feat.geometry?.coordinates?.[1];
+            const lng = feat.geometry?.coordinates?.[0];
+            const coordKey = `${Math.round(lat * 200)}_${Math.round(lng * 200)}`;
 
-          if (fullName && !seenNames.has(lowerName) && !seenCoords.has(coordKey)) {
-            seenNames.add(lowerName);
-            seenCoords.add(coordKey);
+            if (fullName && !seenNames.has(lowerName) && !seenCoords.has(coordKey)) {
+              seenNames.add(lowerName);
+              seenCoords.add(coordKey);
 
-            const isBusiness =
-              p.osm_key === 'shop' ||
-              p.osm_key === 'amenity' ||
-              p.osm_key === 'tourism' ||
-              p.osm_key === 'leisure' ||
-              p.osm_key === 'craft';
+              const isBusiness =
+                p.osm_key === 'shop' ||
+                p.osm_key === 'amenity' ||
+                p.osm_key === 'tourism' ||
+                p.osm_key === 'leisure' ||
+                p.osm_key === 'craft';
 
-            const placeType = isBusiness
-              ? 'Business / Store'
-              : p.osm_value
-              ? p.osm_value.charAt(0).toUpperCase() + p.osm_value.slice(1)
-              : 'Place';
+              const placeType = isBusiness
+                ? 'Business / Store'
+                : p.osm_value
+                ? p.osm_value.charAt(0).toUpperCase() + p.osm_value.slice(1)
+                : 'Place';
 
-            uniqueResults.push({
-              name: fullName,
-              shortName: p.name || parts[0],
-              typeLabel: placeType,
-              isBusiness,
-              city: p.city || p.district || p.state || parts[0],
-              state: p.state || '',
-              country: p.country || '',
-              lat: parseFloat(lat),
-              lng: parseFloat(lng),
-            });
+              uniqueResults.push({
+                name: fullName,
+                shortName: p.name || parts[0],
+                typeLabel: placeType,
+                isBusiness,
+                matchedKeyword: qTerm !== query.trim() ? qTerm : null,
+                city: p.city || p.district || p.state || parts[0],
+                state: p.state || '',
+                country: p.country || '',
+                lat: parseFloat(lat),
+                lng: parseFloat(lng),
+              });
+            }
+          }
+
+          // If we found solid results on this NLP query stage, stop to avoid clutter
+          if (uniqueResults.length >= 3) {
+            break;
           }
         }
 
@@ -346,6 +394,23 @@ export default function LocationAutocomplete({
                       }}
                     >
                       {place.typeLabel}
+                    </span>
+                  )}
+                  {place.matchedKeyword && (
+                    <span
+                      style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 600,
+                        color: '#B45309',
+                        backgroundColor: '#FEF3C7',
+                        padding: '1px 5px',
+                        borderRadius: '4px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                      }}
+                    >
+                      <Sparkles size={9} /> NLP Match
                     </span>
                   )}
                 </div>
