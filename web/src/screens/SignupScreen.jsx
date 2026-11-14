@@ -15,13 +15,11 @@ import {
   CheckCircle2, 
   RefreshCw,
   Camera,
-  Crop,
   Sparkles
 } from 'lucide-react';
 import { theme } from '../theme/appTheme';
 import { apiService } from '../services/apiService';
 import TermsModal from '../widgets/TermsModal';
-import ImageCropModal from '../widgets/ImageCropModal';
 
 export default function SignupScreen({ onNavigate }) {
   const [role, setRole] = useState('customer'); // 'customer' | 'merchant'
@@ -628,17 +626,6 @@ export default function SignupScreen({ onNavigate }) {
 
       {/* Terms & Conditions Modal */}
       <TermsModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
-
-      {/* Image Cropper Modal (16:9 Ratio) */}
-      <ImageCropModal
-        isOpen={showCropModal}
-        imageSrc={tempImageForCrop}
-        onClose={() => setShowCropModal(false)}
-        onCropComplete={(croppedData) => {
-          setCroppedImage(croppedData);
-        }}
-        aspectRatio={16 / 9}
-      />
     </div>
   );
 }
