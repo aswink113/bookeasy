@@ -377,8 +377,8 @@ export default function LocationAutocomplete({
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: theme.colors.primaryNavy }}>
                     {place.shortName}
                   </span>
                   {place.typeLabel && (
@@ -414,7 +414,16 @@ export default function LocationAutocomplete({
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: theme.colors.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: theme.colors.textMuted,
+                    marginTop: '3px',
+                    lineHeight: '1.3',
+                    wordBreak: 'break-word',
+                  }}
+                  title={place.name}
+                >
                   {place.name}
                 </div>
               </div>
